@@ -6,6 +6,19 @@ use WP_CLI;
 use WP_CLI_Command;
 
 class MsDbuCommand extends WP_CLI_Command {
+  protected array $rawRoutes = [];
+
+  protected array $filteredRoutes = [];
+  protected string $appName;
+  protected string $envVarPrefix = "PLATFORM_";
+  protected array $searchColumns = [
+    'option_value',
+    'post_content',
+    'post_excerpt',
+    'post_content_filtered',
+    'meta_value',
+    'domain'
+  ];
 
   /**
    * Updates WordPress multisites in non-production environments on Platform.sh.
@@ -28,21 +41,6 @@ class MsDbuCommand extends WP_CLI_Command {
    * @param array $args       Indexed array of positional arguments.
    * @param array $assoc_args Associative array of associative arguments.
    */
-
-  protected array $rawRoutes = [];
-
-  protected array $filteredRoutes = [];
-  protected string $appName;
-  protected string $envVarPrefix = "PLATFORM_";
-  protected array $searchColumns = [
-    'option_value',
-    'post_content',
-    'post_excerpt',
-    'post_content_filtered',
-    'meta_value',
-    'domain'
-  ];
-
   public function __invoke( $args, $assoc_args ) {
     //figure out where we get our route info
     $routes = (isset($assoc_args['app-name']) && "" !== $assoc_args['app-name']) ?: $this->getRouteFromEnvVar();
@@ -57,6 +55,8 @@ class MsDbuCommand extends WP_CLI_Command {
     WP_CLI::log(var_export($this->filteredRoutes,true));
 
   }
+
+
 
   protected function parseRouteJson(string $routeInfo) {
     $routes = [];
