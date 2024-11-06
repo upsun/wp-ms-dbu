@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_CLI\HelloWorld;
+namespace WP_CLI\MsDbu;
 
 use WP_CLI;
 
