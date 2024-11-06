@@ -1,5 +1,5 @@
 {
-    "name": "platformsh/wp-ms-dbu",
+    "name": "gilzow/wp-ms-dbu-wpcli-package",
     "type": "wp-cli-package",
     "description": "",
     "homepage": "https://github.com/platformsh/wp-ms-dbu",
