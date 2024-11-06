@@ -60,14 +60,14 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected function parseRouteJson(string $routeInfo) {
     $routes = [];
-    if(!json_validate($routeInfo)) {
+    if(!\json_validate($routeInfo)) {
       WP_CLI::error('Route information does not appear to be valid JSON. Exiting.');
     }
 
     try {
-      $routes = json_decode($routeInfo, true, 512, JSON_THROW_ON_ERROR);
+      $routes = \json_decode($routeInfo, true, 512, JSON_THROW_ON_ERROR);
     } catch (\JsonException $e) {
-      WP_CLI::error(printf('Unable to parse route information. Is it valid JSON? %s', $e->getMessage()));
+      WP_CLI::error(\printf('Unable to parse route information. Is it valid JSON? %s', $e->getMessage()));
     }
 
     return $routes;
@@ -75,28 +75,28 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected function getFilteredRoutes(): void {
     $appName = $this->appName;
-    $this->filteredRoutes = array_filter($this->rawRoutes, static function ($route) use ($appName) {
+    $this->filteredRoutes = \array_filter($this->rawRoutes, static function ($route) use ($appName) {
       return (isset($route['upstream']) && $appName === $route['upstream']);
     });
   }
 
   protected function getRouteFromEnvVar(): string {
-    return base64_decode($this->getEnvVar('ROUTES'));
+    return \base64_decode($this->getEnvVar('ROUTES'));
   }
 
   protected function setRawRoutes(array $routes): void {
     $this->rawRoutes = $routes;
   }
 
-  protected function setAppName(string $name) {
+  protected function setAppName(string $name): void {
     $this->appName = $name;
   }
 
   protected function getEnvVar(string $varName) {
     $envVarToGet = $this->envVarPrefix.$varName;
-    if(!getenv($envVarToGet) || "" === getenv($envVarToGet)) {
-      WP_CLI::error(printf("%s is not set or empty. Are you sure you're running on Platform.sh?", $envVarToGet));
+    if(!\getenv($envVarToGet) || "" === \getenv($envVarToGet)) {
+      WP_CLI::error(\printf("%s is not set or empty. Are you sure you're running on Platform.sh?", $envVarToGet));
     }
-    return getenv($envVarToGet);
+    return \getenv($envVarToGet);
   }
 }
