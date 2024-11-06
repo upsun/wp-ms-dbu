@@ -60,9 +60,10 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected function parseRouteJson(string $routeInfo) {
     $routes = [];
-    if(!\json_validate($routeInfo)) {
-      WP_CLI::error('Route information does not appear to be valid JSON. Exiting.');
-    }
+    // json_validate is only available >=8.3.
+//    if(!\json_validate($routeInfo)) {
+//      WP_CLI::error('Route information does not appear to be valid JSON. Exiting.');
+//    }
 
     try {
       $routes = \json_decode($routeInfo, true, 512, JSON_THROW_ON_ERROR);
