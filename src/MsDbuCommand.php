@@ -68,7 +68,7 @@ class MsDbuCommand extends WP_CLI_Command {
     try {
       $routes = \json_decode($routeInfo, true, 512, JSON_THROW_ON_ERROR);
     } catch (\JsonException $e) {
-      WP_CLI::error(\printf('Unable to parse route information. Is it valid JSON? %s', $e->getMessage()));
+      WP_CLI::error(\sprintf('Unable to parse route information. Is it valid JSON? %s', $e->getMessage()));
     }
 
     return $routes;
@@ -96,7 +96,7 @@ class MsDbuCommand extends WP_CLI_Command {
   protected function getEnvVar(string $varName) {
     $envVarToGet = $this->envVarPrefix.$varName;
     if(!\getenv($envVarToGet) || "" === \getenv($envVarToGet)) {
-      WP_CLI::error(\printf("%s is not set or empty. Are you sure you're running on Platform.sh?", $envVarToGet));
+      WP_CLI::error(\sprintf("%s is not set or empty. Are you sure you're running on Platform.sh?", $envVarToGet));
     }
     return \getenv($envVarToGet);
   }
