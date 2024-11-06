@@ -1,0 +1,58 @@
+{
+    "name": "platformsh/wp-ms-dbu",
+    "type": "wp-cli-package",
+    "description": "",
+    "homepage": "https://github.com/platformsh/wp-ms-dbu",
+    "license": "MIT",
+    "authors": [],
+    "require": {
+        "wp-cli/wp-cli": "^2.5"
+    },
+    "require-dev": {
+        "wp-cli/wp-cli-tests": "^3.0.11"
+    },
+    "config": {
+        "process-timeout": 7200,
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.x-dev"
+        },
+        "bundled": false,
+        "commands": [
+            "hello-world"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "WP_CLI\\MsDbu\\": "src/"
+        },
+        "files": [
+            "ms-dbu-command.php"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "behat": "run-behat-tests",
+        "behat-rerun": "rerun-behat-tests",
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpcbf": "run-phpcbf-cleanup",
+        "phpunit": "run-php-unit-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpunit",
+            "@behat"
+        ]
+    },
+    "support": {
+        "issues": "https://github.com/platformsh/wp-ms-dbu/issues"
+    }
+}
