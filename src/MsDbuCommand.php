@@ -7,8 +7,10 @@ use WP_CLI_Command;
 
 class MsDbuCommand extends WP_CLI_Command {
   protected array $rawRoutes = [];
-
+  protected array $defaultDomainInfo = [];
   protected array $filteredRoutes = [];
+  protected string $defaultReplaceURLFull;
+  protected string $defaultSearchURL;
   protected string $appName;
   protected string $envVarPrefix = "PLATFORM_";
   protected array $searchColumns = [
@@ -49,14 +51,44 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->setAppName((isset($assoc_args['app-name']) && "" !== $assoc_args['app-name']) ?: $this->getEnvVar('APPLICATION_NAME'));
     //get our filtered route data
     $this->getFilteredRoutes();
+    $this->setDefaultDomainInfo();
+    $this->setDefaultReplaceURL();
+    $this->setDefaultSearchURL();
 
-    WP_CLI::log("Filtered Routes");
-    WP_CLI::log(var_export($this->filteredRoutes,true));
+    WP_CLI::log("default domain info:");
+    WP_CLI::log(var_export($this->defaultDomainInfo,true));
+
+    WP_CLI::log(sprintf('default replace url: %s', $this->setDefaultReplaceURL()));
+
+    WP_CLI::log(sprintf('default search URL: %s',$this->defaultSearchURL));
 
   }
 
+  protected function setDefaultDomainInfo(): void {
+    /**
+     * we now have (filteredRoutes) a list of NEW domains that are connected to our application as keys, with an array
+     * of values that include production_url which is our "from" url, as well as a primary attribute to indicate which
+     * one is our default domain. Now we need the "primary" domain (aka default_domain). It *should* be the first item
+     * in the array but should we rely on that assumption or should we array_filter so we know we're getting the correct
+     * one?
+     * @todo there should be one, and one only. should we verify and if not true, throw an error?
+     */
+    $this->defaultDomainInfo = array_filter($this->filteredRoutes, static function ($route) {
+      return (isset($route['primary']) && $route['primary']);
+    });
 
+    if(count($this->defaultDomainInfo) !== 1 ) {
+      WP_CLI::warning(sprintf('Default domain info does not contain exactly one entry. In contains %d.', count($this->defaultDomainInfo)));
+    }
+  }
 
+  protected function setDefaultReplaceURL(): void {
+    $this->defaultReplaceURLFull = array_key_first($this->defaultDomainInfo);
+  }
+
+  protected function setDefaultSearchURL(): void {
+    $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
+  }
   protected function parseRouteJson(string $routeInfo) {
     $routes = [];
     // json_validate is only available >=8.3.
