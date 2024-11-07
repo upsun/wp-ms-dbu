@@ -36,7 +36,6 @@ class MsDbuCommand extends WP_CLI_Command {
    *     $ wp ms-dbu
    *     Success: All domains have been updated!
    *
-   * @when before_wp_load
    *
    * @param array $args       Indexed array of positional arguments.
    * @param array $assoc_args Associative array of associative arguments.
