@@ -16,7 +16,7 @@ if ( file_exists( $wpcli_ms_dbu_autoloader ) ) {
 
 WP_CLI::add_command( 'ms-dbu', MsDbuCommand::class, [
   'before_invoke' => static function() {
-    if ( !is_multisite()) {
+    if ( !\is_multisite()) {
       WP_CLI::error('Not a multisite');
     }
 
