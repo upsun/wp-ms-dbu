@@ -63,7 +63,7 @@ class MsDbuCommand extends WP_CLI_Command {
 //
 //    WP_CLI::log(sprintf('default search URL: %s',$this->defaultSearchURL));
     global $wpdb;
-    WP_CLI::log(sprintf('Table prefix is: %s', $wpdb->prefix));
+    WP_CLI::log(sprintf('Table prefix is: %s', $wpdb->base_prefix));
 
     $this->getSites();
     WP_CLI::log('Our sites from the db:');
@@ -71,8 +71,8 @@ class MsDbuCommand extends WP_CLI_Command {
 
     $this->orderFilteredRoutesByDomainLength();
 
-    WP_CLI::log('our filtered routes reordered');
-    WP_CLI::log(var_export($this->filteredRoutes,true));
+//    WP_CLI::log('our filtered routes reordered');
+//    WP_CLI::log(var_export($this->filteredRoutes,true));
 
   }
 
