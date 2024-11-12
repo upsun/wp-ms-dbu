@@ -56,25 +56,30 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->setDefaultReplaceURL();
     $this->setDefaultSearchURL();
 
-    WP_CLI::log("default domain info:");
-    WP_CLI::log(var_export($this->defaultDomainInfo,true));
-
-    WP_CLI::log(sprintf('default replace url: %s', $this->defaultReplaceURLFull));
-
-    WP_CLI::log(sprintf('default search URL: %s',$this->defaultSearchURL));
-    global $table_prefix;
-    WP_CLI::log(sprintf('Table prefix is: %s', $table_prefix));
+//    WP_CLI::log("default domain info:");
+//    WP_CLI::log(var_export($this->defaultDomainInfo,true));
+//
+//    WP_CLI::log(sprintf('default replace url: %s', $this->defaultReplaceURLFull));
+//
+//    WP_CLI::log(sprintf('default search URL: %s',$this->defaultSearchURL));
+    global $wpdb;
+    WP_CLI::log(sprintf('Table prefix is: %s', $wpdb->prefix));
 
     $this->getSites();
     WP_CLI::log('Our sites from the db:');
     WP_CLI::log(var_export($this->sites,true));
+
+    $this->orderFilteredRoutesByDomainLength();
+
+    WP_CLI::log('our filtered routes reordered');
+    WP_CLI::log(var_export($this->filteredRoutes,true));
 
   }
 
   protected function getSites(): void {
     $this->sites = array_map(function ($site) {
       $site->url = sprintf('https://%s/',$site->domain);
-      return $site;
+      return (array) $site;
     },get_sites());
   }
   protected function setDefaultDomainInfo(): void {
@@ -135,6 +140,18 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected function getRouteFromEnvVar(): string {
     return \base64_decode($this->getEnvVar('ROUTES'));
+  }
+
+  protected function orderFilteredRoutesByDomainLength(): void {
+    uasort($this->filteredRoutes, static function ($a, $b) {
+      $lena = substr_count($a['production_url'],'.');
+      $lenb = substr_count($b['production_url'], '.' );
+      if ($lena === $lenb) {
+        return 0;
+      }
+
+      return ($lena < $lenb) ? 1 : -11;
+    });
   }
 
   protected function setRawRoutes(array $routes): void {
