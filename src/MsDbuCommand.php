@@ -15,6 +15,7 @@ class MsDbuCommand extends WP_CLI_Command {
   protected string $appName;
   protected string $envVarPrefix = "PLATFORM_";
 
+  protected string $regexSearchPttrn='(%s(?!\.%s))';
   protected string $tblPrefix = "";
   protected array $searchColumns = [
     'option_value',
@@ -26,6 +27,7 @@ class MsDbuCommand extends WP_CLI_Command {
   ];
 
   protected array $tables = ['site','blogs'];
+  protected array $optionsTables = ['options','posts','postmeta'];
 
   /**
    * Updates WordPress multisites in non-production environments on Platform.sh.
