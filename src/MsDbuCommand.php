@@ -14,6 +14,8 @@ class MsDbuCommand extends WP_CLI_Command {
   protected string $defaultSearchURL;
   protected string $appName;
   protected string $envVarPrefix = "PLATFORM_";
+
+  protected string $tblPrefix = "";
   protected array $searchColumns = [
     'option_value',
     'post_content',
@@ -22,6 +24,8 @@ class MsDbuCommand extends WP_CLI_Command {
     'meta_value',
     'domain'
   ];
+
+  protected array $tables = ['site','blogs'];
 
   /**
    * Updates WordPress multisites in non-production environments on Platform.sh.
@@ -62,8 +66,12 @@ class MsDbuCommand extends WP_CLI_Command {
 //    WP_CLI::log(sprintf('default replace url: %s', $this->defaultReplaceURLFull));
 //
 //    WP_CLI::log(sprintf('default search URL: %s',$this->defaultSearchURL));
-    global $wpdb;
-    WP_CLI::log(sprintf('Table prefix is: %s', $wpdb->base_prefix));
+
+    $this->getTablePrefix();
+    WP_CLI::log(sprintf('Table prefix is: %s', $this->tblPrefix));
+    $this->updateTablesWithPrefix();
+    WP_CLI::log("our tables array with prefix");
+    WP_CLI::log(var_export($this->tables,true));
 
     $this->getSites();
     WP_CLI::log('Our sites from the db:');
@@ -168,5 +176,16 @@ class MsDbuCommand extends WP_CLI_Command {
       WP_CLI::error(\sprintf("%s is not set or empty. Are you sure you're running on Platform.sh?", $envVarToGet));
     }
     return \getenv($envVarToGet);
+  }
+
+  protected function getTablePrefix(): void {
+    global $wpdb;
+    $this->tblPrefix = $wpdb->base_prefix;
+  }
+
+  protected function updateTablesWithPrefix(): void {
+    $this->tables = array_map(function ($table) {
+      return $this->tblPrefix.$table;
+    }, $this->tables);
   }
 }
