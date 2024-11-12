@@ -73,7 +73,7 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected function getSites(): void {
     $this->sites = array_map(function ($site) {
-      $site->url = sprintf('https://%s/',$site['domain']);
+      $site->url = sprintf('https://%s/',$site->domain);
       return $site;
     },get_sites());
   }
