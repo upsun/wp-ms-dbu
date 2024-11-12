@@ -9,6 +9,7 @@ class MsDbuCommand extends WP_CLI_Command {
   protected array $rawRoutes = [];
   protected array $defaultDomainInfo = [];
   protected array $filteredRoutes = [];
+  protected array $sites=[];
   protected string $defaultReplaceURLFull;
   protected string $defaultSearchURL;
   protected string $appName;
@@ -58,12 +59,24 @@ class MsDbuCommand extends WP_CLI_Command {
     WP_CLI::log("default domain info:");
     WP_CLI::log(var_export($this->defaultDomainInfo,true));
 
-    WP_CLI::log(sprintf('default replace url: %s', $this->setDefaultReplaceURL()));
+    WP_CLI::log(sprintf('default replace url: %s', $this->defaultReplaceURLFull));
 
     WP_CLI::log(sprintf('default search URL: %s',$this->defaultSearchURL));
+    global $table_prefix;
+    WP_CLI::log(sprintf('Table prefix is: %s', $table_prefix));
+
+    $this->getSites();
+    WP_CLI::log('Our sites from the db:');
+    WP_CLI::log(var_export($this->sites,true));
 
   }
 
+  protected function getSites(): void {
+    $this->sites = array_map(function ($site) {
+      $site['url'] = sprintf('https://%s/',$site['url']);
+      return $site;
+    },get_sites());
+  }
   protected function setDefaultDomainInfo(): void {
     /**
      * we now have (filteredRoutes) a list of NEW domains that are connected to our application as keys, with an array
@@ -82,10 +95,18 @@ class MsDbuCommand extends WP_CLI_Command {
     }
   }
 
+  /**
+   * @return void
+   * @todo seems like some of these we could use a magic get and just return the correct data?
+   */
   protected function setDefaultReplaceURL(): void {
     $this->defaultReplaceURLFull = array_key_first($this->defaultDomainInfo);
   }
 
+  /**
+   * @return void
+   * @todo seems like some of these we could use a magic get and just return the correct data?
+   */
   protected function setDefaultSearchURL(): void {
     $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
   }
