@@ -26,6 +26,8 @@ class MsDbuCommand extends WP_CLI_Command {
     'domain'
   ];
 
+  protected string $replacePattern = 'wp search-replace \'%s\' %s %s --include-columns=%s --url=%s --verbose';
+
   protected array $tables = ['site','blogs'];
   protected array $optionsTables = ['options','posts','postmeta'];
 
@@ -71,6 +73,40 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->updateTablesWithPrefix();
     $this->getSites();
     $this->orderFilteredRoutesByDomainLength();
+  }
+
+  protected function updateDB() {
+    foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
+      $domainSearch = parse_url($routeData['production_url'], PHP_URL_HOST);
+      $domainReplace = parse_url($urlReplace, PHP_URL_HOST);
+      $blogID = array_search($routeData['production_url'], array_column($this->sites, 'url','blog_id'), true);
+      $targetTables = array_merge($this->tables,$this->processOptionsTables($blogID));
+      $searchTables = implode(' ', $targetTables);
+      $searchColumns = implode(' ', $this->searchColumns);
+
+      /**
+      * For the primary domain, we want to run it through the whole network, otherwise we end up with a mismatch between
+      * wp_blogs and a site's wp_#_options table
+       */
+      $network = (isset($routeData['primary']) && $routeData['primary']) ? ' --network' : '';
+
+      $command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
+
+    }
+  }
+
+  /**
+   * For a given site, we'll need to update a collection of tables related to the site. Tables are named with the format
+   * <prefix><blogid>_<table>
+   * Given a prefix of `wp_`, a blog id of 2, and the table `options` the name is wp_2_options.
+   * HOWEVER, if the blog id is 1, then the table name is `wp_options`
+   * @param int $blogId
+   * @return array
+   */
+  protected function processOptionsTables(int $blogId): array {
+    return array_map(function ($table) use ($blogId){
+      return $this->tblPrefix.((1 === $blogId) ? '' : $blogId . '_').$table;
+    }, $this->optionsTables);
   }
 
   /**
