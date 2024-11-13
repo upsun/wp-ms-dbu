@@ -50,44 +50,36 @@ class MsDbuCommand extends WP_CLI_Command {
    * @param array $assoc_args Associative array of associative arguments.
    */
   public function __invoke( $args, $assoc_args ) {
+
+    $this->setUp($assoc_args);
+
+  }
+
+  protected function setUp(?array $data): void {
     //figure out where we get our route info
-    $routes = (isset($assoc_args['app-name']) && "" !== $assoc_args['app-name']) ?: $this->getRouteFromEnvVar();
+    $routes = (isset($data['routes']) && "" !== $data['routes']) ?: $this->getRouteFromEnvVar();
     //save our raw routes data
     $this->setRawRoutes($this->parseRouteJson($routes));
     //save our app name
-    $this->setAppName((isset($assoc_args['app-name']) && "" !== $assoc_args['app-name']) ?: $this->getEnvVar('APPLICATION_NAME'));
+    $this->setAppName((isset($data['app-name']) && "" !== $data['app-name']) ?: $this->getEnvVar('APPLICATION_NAME'));
     //get our filtered route data
     $this->getFilteredRoutes();
     $this->setDefaultDomainInfo();
     $this->setDefaultReplaceURL();
     $this->setDefaultSearchURL();
-
-//    WP_CLI::log("default domain info:");
-//    WP_CLI::log(var_export($this->defaultDomainInfo,true));
-//
-//    WP_CLI::log(sprintf('default replace url: %s', $this->defaultReplaceURLFull));
-//
-//    WP_CLI::log(sprintf('default search URL: %s',$this->defaultSearchURL));
-
     $this->getTablePrefix();
-    WP_CLI::log(sprintf('Table prefix is: %s', $this->tblPrefix));
     $this->updateTablesWithPrefix();
-    WP_CLI::log("our tables array with prefix");
-    WP_CLI::log(var_export($this->tables,true));
-
     $this->getSites();
-    WP_CLI::log('Our sites from the db:');
-    WP_CLI::log(var_export($this->sites,true));
-
     $this->orderFilteredRoutesByDomainLength();
-
-//    WP_CLI::log('our filtered routes reordered');
-//    WP_CLI::log(var_export($this->filteredRoutes,true));
-
   }
 
+  /**
+   * Retrieves the list of known sites from the database that need to be updated/processed
+   * @return void
+   * @uses get_sites()
+   */
   protected function getSites(): void {
-    $this->sites = array_map(function ($site) {
+    $this->sites = array_map(static function ($site) {
       $site->url = sprintf('https://%s/',$site->domain);
       return (array) $site;
     },get_sites());
@@ -111,6 +103,7 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
+   * Retrieves and saves the default replacement URL from the default domain information
    * @return void
    * @todo seems like some of these we could use a magic get and just return the correct data?
    */
@@ -119,18 +112,22 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
+   * Retrieves and saves the default search URL from the default domain information
    * @return void
    * @todo seems like some of these we could use a magic get and just return the correct data?
    */
   protected function setDefaultSearchURL(): void {
     $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
   }
+
+  /**
+   * Parses the json routes data
+   * @param string $routeInfo JSON string of route information
+   * @return array|mixed
+   * @throws WP_CLI\ExitException
+   */
   protected function parseRouteJson(string $routeInfo) {
     $routes = [];
-    // json_validate is only available >=8.3.
-//    if(!\json_validate($routeInfo)) {
-//      WP_CLI::error('Route information does not appear to be valid JSON. Exiting.');
-//    }
 
     try {
       $routes = \json_decode($routeInfo, true, 512, JSON_THROW_ON_ERROR);
@@ -141,6 +138,10 @@ class MsDbuCommand extends WP_CLI_Command {
     return $routes;
   }
 
+  /**
+   * Filters out all non-primary (ie redirection) routes that are in the collection
+   * @return void
+   */
   protected function getFilteredRoutes(): void {
     $appName = $this->appName;
     $this->filteredRoutes = \array_filter($this->rawRoutes, static function ($route) use ($appName) {
@@ -148,10 +149,24 @@ class MsDbuCommand extends WP_CLI_Command {
     });
   }
 
+  /**
+   * Returns the decoded routes data from the environment variable <pass-prefix>_ROUTES
+   * @return string
+   * @throws WP_CLI\ExitException
+   */
   protected function getRouteFromEnvVar(): string {
     return \base64_decode($this->getEnvVar('ROUTES'));
   }
 
+  /**
+   * Reorders our route array so that subdomains (or sub-sub domains) of a domain are first. ie least specific to most
+   * specific
+   *
+   * We need the default_domain to be processed LAST otherwise any domains that are sub(-sub)domains of it wont be
+   * allowed to update their tables. This assumes that our default_domain is first in the list which it *should* be.
+   * @todo do we need to search for default_domain, remove it from where it is, and then append it?
+   * @return void
+   */
   protected function orderFilteredRoutesByDomainLength(): void {
     uasort($this->filteredRoutes, static function ($a, $b) {
       $lena = substr_count($a['production_url'],'.');
@@ -164,14 +179,32 @@ class MsDbuCommand extends WP_CLI_Command {
     });
   }
 
+  /**
+   * Saves the raw, unfiltered route array
+   * @param array $routes array of route information
+   * @return void
+   */
   protected function setRawRoutes(array $routes): void {
     $this->rawRoutes = $routes;
   }
 
+  /**
+   * Sets the value of the app's name
+   * @param string $name App name as defined in the platform/upsun configuration file
+   * @return void
+   */
   protected function setAppName(string $name): void {
     $this->appName = $name;
   }
 
+  /**
+   * Retrieve an environment variable's value.
+   * Note - assumes the variable starts with the value in $this->envVarPrefix
+   * @param string $varName
+   * @return array|false|string
+   * @throws WP_CLI\ExitException
+   * @todo should/do we need to have it try the requested env var without the prefix?
+   */
   protected function getEnvVar(string $varName) {
     $envVarToGet = $this->envVarPrefix.$varName;
     if(!\getenv($envVarToGet) || "" === \getenv($envVarToGet)) {
@@ -180,11 +213,19 @@ class MsDbuCommand extends WP_CLI_Command {
     return \getenv($envVarToGet);
   }
 
+  /**
+   * Retrieve and stpre the table prefix as defined in wp-config
+   * @return void
+   */
   protected function getTablePrefix(): void {
     global $wpdb;
     $this->tblPrefix = $wpdb->base_prefix;
   }
 
+  /**
+   * Updates our array of tables to include the prefix as defined in wp-config
+   * @return void
+   */
   protected function updateTablesWithPrefix(): void {
     $this->tables = array_map(function ($table) {
       return $this->tblPrefix.$table;
