@@ -92,7 +92,7 @@ class MsDbuCommand extends WP_CLI_Command {
       $positional = [...$positional, ...$this->tables,...$this->processOptionsTables($blogID)];
       ///$searchTables = implode(' ', $targetTables);
       //$searchColumns = implode(' ', $this->searchColumns);
-      $associative['include-columns'] = implode(' ', $this->searchColumns);
+      $associative['include-columns'] = implode(',', $this->searchColumns);
       $associative['url'] = $routeData['production_url'];
       /**
       * For the primary domain, we want to run it through the whole network, otherwise we end up with a mismatch between
