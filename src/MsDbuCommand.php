@@ -84,6 +84,8 @@ class MsDbuCommand extends WP_CLI_Command {
       $positional = [];
       $associative = ['verbose'=>true,'dry-run'=>true];
 
+      WP_CLI::log(sprintf("I am going to try and find %s\nAnd replace it with %s", $routeData['production_url'], $urlReplace));
+
       if (false === $blogID = array_search($routeData['production_url'], array_column($this->sites, 'url','blog_id'), true)) {
         WP_CLI::log(sprintf('I am unable to find a blog id for %s. Skipping.',$routeData['production_url']));
         continue;
