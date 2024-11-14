@@ -57,6 +57,7 @@ class MsDbuCommand extends WP_CLI_Command {
   public function __invoke( $args, $assoc_args ) {
 
     $this->setUp($assoc_args);
+    $this->updateDB();
 
   }
 
