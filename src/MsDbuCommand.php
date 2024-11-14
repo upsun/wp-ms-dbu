@@ -4,7 +4,7 @@ namespace WP_CLI\MsDbu;
 
 use WP_CLI;
 use WP_CLI_Command;
-use WP_CLI\SearchReplacer;
+use Search_Replace_Command;
 
 class MsDbuCommand extends WP_CLI_Command {
   protected array $rawRoutes = [];
@@ -103,8 +103,8 @@ class MsDbuCommand extends WP_CLI_Command {
       }
 
       //$command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
-      $searcher=new SearchReplacer($positional,$associative);
-
+      $searcher=new Search_Replace_Command();
+      $searcher($positional, $associative);
     }
   }
 
