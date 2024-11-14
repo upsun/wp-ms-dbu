@@ -104,6 +104,10 @@ class MsDbuCommand extends WP_CLI_Command {
       }
 
       //$command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
+      WP_CLI::log("positional array:");
+      WP_CLI::log(var_export($positional,true));
+      WP_CLI::log("associative array:");
+      WP_CLI::log(var_export($associative,true));
       $searcher=new Search_Replace_Command();
       $searcher($positional, $associative);
     }
