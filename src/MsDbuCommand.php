@@ -83,11 +83,17 @@ class MsDbuCommand extends WP_CLI_Command {
     foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
       $positional = [];
       $associative = ['verbose'=>true,'dry-run'=>true];
+
+      if (false === $blogID = array_search($routeData['production_url'], array_column($this->sites, 'url','blog_id'), true)) {
+        WP_CLI::log(sprintf('I am unable to find a blog id for %s. Skipping.',$routeData['production_url']));
+        break;
+      }
+
       $domainSearch = parse_url($routeData['production_url'], PHP_URL_HOST);
       $positional[] = $domainSearch;
       $domainReplace = parse_url($urlReplace, PHP_URL_HOST);
       $positional[] = $domainReplace;
-      $blogID = array_search($routeData['production_url'], array_column($this->sites, 'url','blog_id'), true);
+
       //$targetTables = array_merge($this->tables,$this->processOptionsTables($blogID));
       $positional = [...$positional, ...$this->tables,...$this->processOptionsTables($blogID)];
       ///$searchTables = implode(' ', $targetTables);
