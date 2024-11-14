@@ -4,6 +4,7 @@ namespace WP_CLI\MsDbu;
 
 use WP_CLI;
 use WP_CLI_Command;
+use WP_CLI\SearchReplacer;
 
 class MsDbuCommand extends WP_CLI_Command {
   protected array $rawRoutes = [];
@@ -25,6 +26,8 @@ class MsDbuCommand extends WP_CLI_Command {
     'meta_value',
     'domain'
   ];
+
+  protected SearchReplacer $searchReplacer;
 
   protected string $replacePattern = 'wp search-replace \'%s\' %s %s --include-columns=%s --url=%s --verbose';
 
@@ -77,20 +80,30 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected function updateDB() {
     foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
+      $positional = [];
+      $associative = ['verbose'=>true,'dry-run'=>true];
       $domainSearch = parse_url($routeData['production_url'], PHP_URL_HOST);
+      $positional[] = $domainSearch;
       $domainReplace = parse_url($urlReplace, PHP_URL_HOST);
+      $positional[] = $domainReplace;
       $blogID = array_search($routeData['production_url'], array_column($this->sites, 'url','blog_id'), true);
-      $targetTables = array_merge($this->tables,$this->processOptionsTables($blogID));
-      $searchTables = implode(' ', $targetTables);
-      $searchColumns = implode(' ', $this->searchColumns);
-
+      //$targetTables = array_merge($this->tables,$this->processOptionsTables($blogID));
+      $positional = [...$positional, ...$this->tables,...$this->processOptionsTables($blogID)];
+      ///$searchTables = implode(' ', $targetTables);
+      //$searchColumns = implode(' ', $this->searchColumns);
+      $associative['include-columns'] = implode(' ', $this->searchColumns);
+      $associative['url'] = $routeData['production_url'];
       /**
       * For the primary domain, we want to run it through the whole network, otherwise we end up with a mismatch between
       * wp_blogs and a site's wp_#_options table
        */
-      $network = (isset($routeData['primary']) && $routeData['primary']) ? ' --network' : '';
+      //$network = (isset($routeData['primary']) && $routeData['primary']) ? ' --network' : '';
+      if(isset($routeData['primary']) && $routeData['primary']) {
+        $associative['network'] = true;
+      }
 
-      $command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
+      //$command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
+      $searcher=new SearchReplacer($positional,$associative);
 
     }
   }
