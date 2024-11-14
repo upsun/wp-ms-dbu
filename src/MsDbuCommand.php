@@ -86,7 +86,7 @@ class MsDbuCommand extends WP_CLI_Command {
 
       if (false === $blogID = array_search($routeData['production_url'], array_column($this->sites, 'url','blog_id'), true)) {
         WP_CLI::log(sprintf('I am unable to find a blog id for %s. Skipping.',$routeData['production_url']));
-        break;
+        continue;
       }
 
       $domainSearch = parse_url($routeData['production_url'], PHP_URL_HOST);
