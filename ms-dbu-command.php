@@ -40,7 +40,7 @@ WP_CLI::add_hook('after_wp_config_load', static function (){
   $appName = getenv('PLATFORM_APPLICATION_NAME');
   //get all the valid routes that map to this app
   $aryUpstreamRoutes = array_filter($routes, static function ($route) use ($appName) {
-    return isset($route['upstream']) && $appName === $route['upstream'];
+    return isset($route['upstream']) && $appName === $route['upstream'] && $route['primary'];
   });
 
 //  $site_host = parse_url(array_key_first(array_filter($aryUpstreamRoutes, static function ($route) {
