@@ -33,7 +33,8 @@ WP_CLI::add_hook('after_wp_config_load', static function () {
     return;
   }
 
-  $rawRoutes = \WP_CLI\MsDbu\MsDbuCommand::getRouteFromEnvVar();
+
+  $rawRoutes = \WP_CLI\MsDbu\MsDbuCommand::parseRouteJson(\WP_CLI\MsDbu\MsDbuCommand::getRouteFromEnvVar());
   $appName = \WP_CLI\MsDbu\MsDbuCommand::getEnvVar('APPLICATION_NAME');
   $filteredRoutes = \WP_CLI\MsDbu\MsDbuCommand::getFilteredRoutes($rawRoutes,$appName);
   $defaultRouteInfo = \WP_CLI\MsDbu\MsDbuCommand::retrieveDefaultDomainInfo($filteredRoutes);
