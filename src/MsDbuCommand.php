@@ -79,6 +79,10 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->orderFilteredRoutesByDomainLength();
   }
 
+  /**
+   * @return void
+   * @todo @see https://rudrastyh.com/wordpress-multisite/switch_to-blog-performance.html
+   */
   protected function updateDB() {
     foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
       $positional = [];
@@ -112,14 +116,15 @@ class MsDbuCommand extends WP_CLI_Command {
       }
 
       //$command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
-      WP_CLI::log("positional array:");
-      WP_CLI::log(var_export($positional,true));
-      WP_CLI::log("associative array:");
-      WP_CLI::log(var_export($associative,true));
-      switch_to_blog($blogID);
+//      WP_CLI::log("positional array:");
+//      WP_CLI::log(var_export($positional,true));
+//      WP_CLI::log("associative array:");
+//      WP_CLI::log(var_export($associative,true));
+      //switch_to_blog($blogID);
+      WP_CLI::set_url($routeData['production_url']);
       $searcher=new Search_Replace_Command();
       $searcher($positional, $associative);
-      restore_current_blog();
+      //restore_current_blog();
     }
   }
 
