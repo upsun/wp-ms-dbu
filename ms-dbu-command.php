@@ -46,8 +46,9 @@ WP_CLI::add_hook('after_wp_config_load', static function (){
 //  $site_host = parse_url(array_key_first(array_filter($aryUpstreamRoutes, static function ($route) {
 //    return $route['primary'];
 //  })),PHP_URL_HOST);
-
-  WP_CLI::log('Upstream Routes');
-  WP_CLI::log(var_export($aryUpstreamRoutes,true));
+  //grab the first item
+  $mainRoute = reset($aryUpstreamRoutes);
+  WP_CLI::log(sprintf('Setting the WPCLI to use %s as the url for this command',$mainRoute['production_url']));
+  WP_CLI::set_url($mainRoute['production_url']);
 
 });
