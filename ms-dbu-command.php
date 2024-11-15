@@ -28,11 +28,10 @@ WP_CLI::add_command( 'ms-dbu', MsDbuCommand::class, [
   }
 ] );
 
-WP_CLI::add_hook('after_wp_config_load', static function ($foo,$bar){
+WP_CLI::add_hook('after_wp_config_load', static function (){
   global $aryUpstreamRoutes;
-  WP_CLI::log('foo?');
-  WP_CLI::log(var_export($foo,true));
-  WP_CLI::log('bar?');
-  WP_CLI::log(var_export($bar,true));
+  global $blog_id;
+  WP_CLI::log('blogid?');
+  WP_CLI::log(var_export($blog_id,true));
 
 });
