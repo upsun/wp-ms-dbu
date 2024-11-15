@@ -69,7 +69,7 @@ class MsDbuCommand extends WP_CLI_Command {
     //figure out where we get our route info
     $routes = (isset($data['routes']) && "" !== $data['routes']) ?: self::getRouteFromEnvVar();
     //save our raw routes data
-    $this->setRawRoutes($this->parseRouteJson($routes));
+    $this->setRawRoutes(self::parseRouteJson($routes));
     //save our app name
     $this->setAppName((isset($data['app-name']) && "" !== $data['app-name']) ?: self::getEnvVar('APPLICATION_NAME'));
     //get our filtered route data
@@ -192,24 +192,6 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
-   * Parses the json routes data
-   * @param string $routeInfo JSON string of route information
-   * @return array|mixed
-   * @throws WP_CLI\ExitException
-   */
-  protected function parseRouteJson(string $routeInfo) {
-    $routes = [];
-
-    try {
-      $routes = \json_decode($routeInfo, true, 512, JSON_THROW_ON_ERROR);
-    } catch (\JsonException $e) {
-      WP_CLI::error(\sprintf('Unable to parse route information. Is it valid JSON? %s', $e->getMessage()));
-    }
-
-    return $routes;
-  }
-
-  /**
    * Filters out all non-primary (ie redirection) routes that are in the collection
    * @return void
    */
@@ -328,5 +310,23 @@ class MsDbuCommand extends WP_CLI_Command {
       return array_filter($routes, static function($route) use ($appName) {
         return (isset($route['upstream']) && $appName === $route['upstream']);
       });
+  }
+
+  /**
+   * Parses the json routes data
+   * @param string $routeInfo JSON string of route information
+   * @return array|mixed
+   * @throws WP_CLI\ExitException
+   */
+  public static function parseRouteJson(string $routeInfo) {
+    $routes = [];
+
+    try {
+      $routes = \json_decode($routeInfo, true, 512, JSON_THROW_ON_ERROR);
+    } catch (\JsonException $e) {
+      WP_CLI::error(\sprintf('Unable to parse route information. Is it valid JSON? %s', $e->getMessage()));
+    }
+
+    return $routes;
   }
 }
