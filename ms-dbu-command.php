@@ -28,7 +28,7 @@ WP_CLI::add_command( 'ms-dbu', MsDbuCommand::class, [
   }
 ] );
 
-WP_CLI::add_hook('after_wp_config_load', static function (){
+WP_CLI::add_hook('after_wp_load', static function (){
   $sites = get_sites();
   WP_CLI::log('sites');
   WP_CLI::log(var_export($sites,true));
