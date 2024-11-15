@@ -315,10 +315,10 @@ class MsDbuCommand extends WP_CLI_Command {
   /**
    * Parses the json routes data
    * @param string $routeInfo JSON string of route information
-   * @return array|mixed
+   * @return array
    * @throws WP_CLI\ExitException
    */
-  public static function parseRouteJson(string $routeInfo) {
+  public static function parseRouteJson(string $routeInfo): array {
     $routes = [];
 
     try {
