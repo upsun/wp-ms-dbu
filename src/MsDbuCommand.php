@@ -3,6 +3,7 @@
 namespace WP_CLI\MsDbu;
 
 use WP_CLI;
+use WP_CLI\ExitException;
 use WP_CLI_Command;
 use Search_Replace_Command;
 
@@ -14,7 +15,7 @@ class MsDbuCommand extends WP_CLI_Command {
   protected string $defaultReplaceURLFull;
   protected string $defaultSearchURL;
   protected string $appName;
-  protected string $envVarPrefix = "PLATFORM_";
+  protected static string $envVarPrefix = "PLATFORM_";
 
   protected string $regexSearchPttrn='(%s(?!\.%s))';
   protected string $tblPrefix = "";
@@ -54,22 +55,25 @@ class MsDbuCommand extends WP_CLI_Command {
    * @param array $args       Indexed array of positional arguments.
    * @param array $assoc_args Associative array of associative arguments.
    */
-  public function __invoke( $args, $assoc_args ) {
+  public function __invoke(array $args, array $assoc_args ) {
 
     $this->setUp($assoc_args);
     $this->updateDB();
 
   }
 
+  /**
+   * @throws ExitException
+   */
   protected function setUp(?array $data): void {
     //figure out where we get our route info
-    $routes = (isset($data['routes']) && "" !== $data['routes']) ?: $this->getRouteFromEnvVar();
+    $routes = (isset($data['routes']) && "" !== $data['routes']) ?: self::getRouteFromEnvVar();
     //save our raw routes data
     $this->setRawRoutes($this->parseRouteJson($routes));
     //save our app name
-    $this->setAppName((isset($data['app-name']) && "" !== $data['app-name']) ?: $this->getEnvVar('APPLICATION_NAME'));
+    $this->setAppName((isset($data['app-name']) && "" !== $data['app-name']) ?: self::getEnvVar('APPLICATION_NAME'));
     //get our filtered route data
-    $this->getFilteredRoutes();
+    $this->setFilteredRoutes();
     $this->setDefaultDomainInfo();
     $this->setDefaultReplaceURL();
     $this->setDefaultSearchURL();
@@ -83,7 +87,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @return void
    * @todo @see https://rudrastyh.com/wordpress-multisite/switch_to-blog-performance.html
    */
-  protected function updateDB() {
+  protected function updateDB(): void {
     foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
       $positional = [];
       $associative = ['verbose'=>true,'dry-run'=>true];
@@ -162,9 +166,7 @@ class MsDbuCommand extends WP_CLI_Command {
      * one?
      * @todo there should be one, and one only. should we verify and if not true, throw an error?
      */
-    $this->defaultDomainInfo = array_filter($this->filteredRoutes, static function ($route) {
-      return (isset($route['primary']) && $route['primary']);
-    });
+    $this->defaultDomainInfo = self::retrieveDefaultDomainInfo($this->filteredRoutes);
 
     if(count($this->defaultDomainInfo) !== 1 ) {
       WP_CLI::warning(sprintf('Default domain info does not contain exactly one entry. In contains %d.', count($this->defaultDomainInfo)));
@@ -211,20 +213,8 @@ class MsDbuCommand extends WP_CLI_Command {
    * Filters out all non-primary (ie redirection) routes that are in the collection
    * @return void
    */
-  protected function getFilteredRoutes(): void {
-    $appName = $this->appName;
-    $this->filteredRoutes = \array_filter($this->rawRoutes, static function ($route) use ($appName) {
-      return (isset($route['upstream']) && $appName === $route['upstream']);
-    });
-  }
-
-  /**
-   * Returns the decoded routes data from the environment variable <pass-prefix>_ROUTES
-   * @return string
-   * @throws WP_CLI\ExitException
-   */
-  protected function getRouteFromEnvVar(): string {
-    return \base64_decode($this->getEnvVar('ROUTES'));
+  protected function setFilteredRoutes(): void {
+    $this->filteredRoutes = self::getFilteredRoutes($this->rawRoutes,$this->appName);
   }
 
   /**
@@ -267,22 +257,6 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
-   * Retrieve an environment variable's value.
-   * Note - assumes the variable starts with the value in $this->envVarPrefix
-   * @param string $varName
-   * @return array|false|string
-   * @throws WP_CLI\ExitException
-   * @todo should/do we need to have it try the requested env var without the prefix?
-   */
-  protected function getEnvVar(string $varName) {
-    $envVarToGet = $this->envVarPrefix.$varName;
-    if(!\getenv($envVarToGet) || "" === \getenv($envVarToGet)) {
-      WP_CLI::error(\sprintf("%s is not set or empty. Are you sure you're running on Platform.sh?", $envVarToGet));
-    }
-    return \getenv($envVarToGet);
-  }
-
-  /**
    * Retrieve and stpre the table prefix as defined in wp-config
    * @return void
    */
@@ -299,5 +273,60 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->tables = array_map(function ($table) {
       return $this->tblPrefix.$table;
     }, $this->tables);
+  }
+
+  /**
+   * Returns the decoded routes data from the environment variable <pass-prefix>_ROUTES
+   * @return string
+   * @throws WP_CLI\ExitException
+   */
+  public static function getRouteFromEnvVar(): string {
+    return \base64_decode(self::getEnvVar('ROUTES'));
+  }
+
+  /**
+   * Retrieve an environment variable's value.
+   * Note - assumes the variable starts with the value in self::envVarPrefix
+   * @param string $varName
+   * @return array|false|string
+   * @throws WP_CLI\ExitException
+   * @todo should/do we need to have it try the requested env var without the prefix?
+   */
+  public static function getEnvVar(string $varName) {
+    $envVarToGet = self::$envVarPrefix.$varName;
+    if(!\getenv($envVarToGet) || "" === \getenv($envVarToGet)) {
+      WP_CLI::error(\sprintf("%s is not set or empty. Are you sure you're running on Platform.sh?", $envVarToGet));
+    }
+    return \getenv($envVarToGet);
+  }
+
+  /**
+   *
+   * @param array $routes list of filtered routes
+   * @return array
+   */
+  public static function retrieveDefaultDomainInfo(array $routes): array {
+    /**
+     * we now have (filteredRoutes) a list of NEW domains that are connected to our application as keys, with an array
+     * of values that include production_url which is our "from" url, as well as a primary attribute to indicate which
+     * one is our default domain. Now we need the "primary" domain (aka default_domain). It *should* be the first item
+     * in the array but should we rely on that assumption or should we array_filter so we know we're getting the correct
+     * one?
+     * @todo there should be one, and one only. should we verify and if not true, throw an error?
+     */
+    return array_filter($routes, static function ($route) {
+      return (isset($route['primary']) && $route['primary']);
+    });
+  }
+
+  /**
+   * @param array $routes
+   * @param string $appName
+   * @return array
+   */
+  public static function getFilteredRoutes(array $routes, string $appName): array {
+      return array_filter($routes, static function($route) use ($appName) {
+        return (isset($route['upstream']) && $appName === $route['upstream']);
+      });
   }
 }
