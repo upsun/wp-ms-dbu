@@ -29,9 +29,8 @@ WP_CLI::add_command( 'ms-dbu', MsDbuCommand::class, [
 ] );
 
 WP_CLI::add_hook('after_wp_config_load', static function (){
-  global $aryUpstreamRoutes;
-  global $blog_id;
-  WP_CLI::log('blogid?');
-  WP_CLI::log(var_export($blog_id,true));
+  $sites = get_sites();
+  WP_CLI::log('sites');
+  WP_CLI::log(var_export($sites,true));
 
 });
