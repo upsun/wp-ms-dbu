@@ -198,6 +198,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @return void
    */
   protected function setFilteredRoutes(): void {
+    WP_CLI::log(sprintf("Setting filtered routes using %s for the appname", $this->appName));
     $this->filteredRoutes = self::getFilteredRoutes($this->rawRoutes,$this->appName);
   }
 
@@ -237,6 +238,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @return void
    */
   protected function setAppName(string $name): void {
+    WP_CLI::log(sprintf("Setting app name as %s",$name));
     $this->appName = $name;
   }
 
