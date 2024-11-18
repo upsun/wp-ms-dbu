@@ -125,9 +125,18 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
    */
 
   $filteredRoutes = \WP_CLI\MsDbu\MsDbuCommand::getFilteredRoutes($rawRoutes,$appName);
+  if(0 === count($filteredRoutes)) {
+    WP_CLI::debug(sprintf("Filtered routes came back empty. Skipping %s",$commandDescript));
+    return;
+  }
   WP_CLI::log("filtered routes");
   WP_CLI::log(var_export($filteredRoutes,true));
   $defaultRouteInfo = \WP_CLI\MsDbu\MsDbuCommand::retrieveDefaultDomainInfo($filteredRoutes);
+
+  if(1 !== count($defaultRouteInfo) || !(isset($defaultRouteInfo[0]['production_url']))) {
+    WP_CLI::debug(sprintf("Default route info isn't exactly 1 entry, or production url is missing. Skipping %s",$commandDescript));
+    return;
+  }
   WP_CLI::log("Default route info");
   WP_CLI::log(var_export($defaultRouteInfo,true));
 
