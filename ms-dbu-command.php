@@ -82,6 +82,7 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
       /**
        * If we're getting them from the envVar, then they're bas64 encoded
        */
+      WP_CLI::log("getting routes from the env var");
       $rawRoutes =  \WP_CLI\MsDbu\MsDbuCommand::parseRouteJson(\WP_CLI\MsDbu\MsDbuCommand::getRouteFromEnvVar());
     }
   } else if(1 !== preg_match($routePattern,reset($routeMatches),$capturedRoutes)) {
@@ -89,6 +90,7 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
     WP_CLI::debug(sprintf("Unable to retrieve routes from parameter. Skipping %s", $commandDescript));
     return;
   } else {
+    WP_CLI::log("getting routes from passed in parameter");
     $rawRoutes = \WP_CLI\MsDbu\MsDbuCommand::parseRouteJson($capturedRoutes[1]);
   }
 
@@ -103,12 +105,14 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
       WP_CLI::debug(sprintf('App name not given as a parameter or environment variable. Skipping %s',$commandDescript));
       return;
     } else {
+      WP_CLI::log("Getting app name from envVar");
       $appName = \WP_CLI\MsDbu\MsDbuCommand::getEnvVar('APPLICATION_NAME');
     }
   } elseif(1 !== preg_match($appNamePattern,reset($nameMatches), $capturedNames)) {
     WP_CLI::debug(sprintf("Unable to retrieve routes from parameter. Skipping %s",$commandDescript));
     return;
   } else {
+    WP_CLI::log("getting app name from parameter");
     $appName = $capturedNames[1];
   }
 
