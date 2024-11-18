@@ -28,20 +28,17 @@ WP_CLI::add_command( 'ms-dbu', MsDbuCommand::class, [
 ] );
 
 WP_CLI::add_hook('after_wp_config_load', static function () {
-  $url =  WP_CLI::get_config( 'url' );
-  WP_CLI::log('url from after_wp_config_load is...');
-  WP_CLI::log(var_export($url,true));
   /**
    * They've already manually set the --url parameter so we dont want to override it
    */
-  if(!is_null($url) && '' !== $url) {
+  if(WP_CLI::has_config('url')) {
     WP_CLI::warning('url is already set. skipping...');
     return;
   }
 
-  $mxdVals = WP_CLI::get_value_from_arg_or_stdin([],2);
-  WP_CLI::log('return from arg or stdin?');
-  WP_CLI::log(var_export($mxdVals,true));
+  $allConfig = WP_CLI::get_config();
+  WP_CLI::log("all the configs?");
+  WP_CLI::log(var_export($allConfig,true));
 
   /**
    * @todo these can be replaced with calls to \WP_CLI\MsDbu\MsDbuCommand::getEnvVar()
