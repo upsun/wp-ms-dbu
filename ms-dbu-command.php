@@ -28,6 +28,19 @@ WP_CLI::add_command( 'ms-dbu', MsDbuCommand::class, [
 ] );
 
 WP_CLI::add_hook('after_wp_config_load', static function () {
+  $url =  WP_CLI::get_config( 'url' );
+  WP_CLI::log(sprintf('url is %s',$url));
+  /**
+   * They've already manually set the --url parameter so we dont want to override it
+   */
+  if(!is_null($url) || '' !== $url) {
+    return;
+  }
+
+  $mxdVals = WP_CLI::get_value_from_arg_or_stdin();
+  WP_CLI::log('return from arg or stdin?');
+  WP_CLI::log(var_export($mxdVals,true));
+
   /**
    * @todo these can be replaced with calls to \WP_CLI\MsDbu\MsDbuCommand::getEnvVar()
    */
@@ -35,6 +48,8 @@ WP_CLI::add_hook('after_wp_config_load', static function () {
     WP_CLI::debug("PLATFORM_APPLICATION_NAME and/or PLATFORM_ROUTES are missing. Unable to determine default url.");
     return;
   }
+
+
 
 //  WP_CLI::log('Do we have access to argv?');
 //  global $argv;
