@@ -71,7 +71,7 @@ class MsDbuCommand extends WP_CLI_Command {
     //save our raw routes data
     $this->setRawRoutes(self::parseRouteJson($routes));
     //save our app name
-    $this->setAppName((isset($data['app-name']) && "" !== $data['app-name']) ?: self::getEnvVar('APPLICATION_NAME'));
+    $this->setAppName((isset($data['app-name']) && "" !== $data['app-name']) ? $data['app-name'] : self::getEnvVar('APPLICATION_NAME'));
     //get our filtered route data
     $this->setFilteredRoutes();
     $this->setDefaultDomainInfo();
