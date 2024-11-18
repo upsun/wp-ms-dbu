@@ -39,11 +39,8 @@ WP_CLI::add_hook('after_wp_config_load', static function () {
     return;
   }
 
-  $allConfig = WP_CLI::get_config();
-  WP_CLI::log("all the configs?");
-  WP_CLI::log(var_export($allConfig,true));
-
   /**
+   * Until we can figure out how to access the assoc args we'll have to rely on environment variables
    * @todo these can be replaced with calls to \WP_CLI\MsDbu\MsDbuCommand::getEnvVar()
    */
   if(!getenv('PLATFORM_APPLICATION_NAME') || !getenv('PLATFORM_ROUTES')) {
@@ -51,15 +48,13 @@ WP_CLI::add_hook('after_wp_config_load', static function () {
     return;
   }
 
-
-
-//  WP_CLI::log('Do we have access to argv?');
-//  global $argv;
-//  WP_CLI::log(var_export($argv,true));
+  WP_CLI::log('Do we have access to argv?');
+  global $argv;
+  WP_CLI::log(var_export($argv,true));
 //  WP_CLI::log("or maybe as _SERVER[argv]?");
 //  WP_CLI::log(var_export($_SERVER['argv'],true));
-    WP_CLI::log('Global keys?');
-    WP_CLI::log(var_export(array_keys($GLOBALS),true));
+//    WP_CLI::log('Global keys?');
+//    WP_CLI::log(var_export(array_keys($GLOBALS),true));
 
   /**
    * @todod Should we create a function that'll bundle all this together so we can have one call?
