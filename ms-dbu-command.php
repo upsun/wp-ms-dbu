@@ -29,12 +29,13 @@ WP_CLI::add_command( 'ms-dbu', MsDbuCommand::class, [
 
 WP_CLI::add_hook('after_wp_config_load', static function () {
   /**
-   * They've already manually set the --url parameter so we dont want to override it
+   * If they've already manually set the --url parameter so we dont want to override it
+   * You would think we could use WP_CLI::has_config('url') but for some reason that is returning a true
+   * even if url is NULL...
    */
-  if(WP_CLI::has_config('url')) {
-    $url = WP_CLI::get_config('url');
+  $url = WP_CLI::get_config('url');
+  if(!is_null($url) && "" !== $url) {
     WP_CLI::warning('url is already set. skipping...');
-    WP_CLI::log(var_export($url,true));
     return;
   }
 
