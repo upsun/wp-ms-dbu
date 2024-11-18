@@ -169,7 +169,9 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->defaultDomainInfo = self::retrieveDefaultDomainInfo($this->filteredRoutes);
 
     if(count($this->defaultDomainInfo) !== 1 ) {
-      WP_CLI::warning(sprintf('Default domain info does not contain exactly one entry. In contains %d.', count($this->defaultDomainInfo)));
+      WP_CLI::warning(sprintf('Default domain info does not contain exactly one entry. It contains %d.', count($this->defaultDomainInfo)));
+      WP_CLI::log(var_export($this->filteredRoutes,true));
+      WP_CLI::error("Exiting.");
     }
   }
 
@@ -239,7 +241,7 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
-   * Retrieve and stpre the table prefix as defined in wp-config
+   * Retrieve and store the table prefix as defined in wp-config
    * @return void
    */
   protected function getTablePrefix(): void {
