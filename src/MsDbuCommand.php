@@ -67,7 +67,7 @@ class MsDbuCommand extends WP_CLI_Command {
    */
   protected function setUp(?array $data): void {
     //figure out where we get our route info
-    $routes = (isset($data['routes']) && "" !== $data['routes']) ?: self::getRouteFromEnvVar();
+    $routes = (isset($data['routes']) && "" !== $data['routes']) ? $data['routes'] : self::getRouteFromEnvVar();
     //save our raw routes data
     $this->setRawRoutes(self::parseRouteJson($routes));
     //save our app name
@@ -170,7 +170,7 @@ class MsDbuCommand extends WP_CLI_Command {
 
     if(count($this->defaultDomainInfo) !== 1 ) {
       WP_CLI::warning(sprintf('Default domain info does not contain exactly one entry. It contains %d.', count($this->defaultDomainInfo)));
-      WP_CLI::log(var_export($this->filteredRoutes,true));
+      WP_CLI::debug(var_export($this->filteredRoutes,true));
       WP_CLI::error("Exiting.");
     }
   }
@@ -198,7 +198,6 @@ class MsDbuCommand extends WP_CLI_Command {
    * @return void
    */
   protected function setFilteredRoutes(): void {
-    WP_CLI::log(sprintf("Setting filtered routes using %s for the appname", $this->appName));
     $this->filteredRoutes = self::getFilteredRoutes($this->rawRoutes,$this->appName);
   }
 
@@ -238,7 +237,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @return void
    */
   protected function setAppName(string $name): void {
-    WP_CLI::log(sprintf("Setting app name as %s",$name));
+    WP_CLI::debug(sprintf("Setting app name as %s",$name));
     $this->appName = $name;
   }
 
