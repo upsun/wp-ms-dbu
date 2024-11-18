@@ -41,8 +41,8 @@ WP_CLI::add_hook('after_wp_config_load', static function () {
 //  WP_CLI::log(var_export($argv,true));
 //  WP_CLI::log("or maybe as _SERVER[argv]?");
 //  WP_CLI::log(var_export($_SERVER['argv'],true));
-    WP_CLI::log('Globals?');
-    WP_CLI::log(var_export($GLOBALS,true));
+    WP_CLI::log('Global keys?');
+    WP_CLI::log(var_export(array_keys($GLOBALS),true));
 
   /**
    * @todod Should we create a function that'll bundle all this together so we can have one call?
