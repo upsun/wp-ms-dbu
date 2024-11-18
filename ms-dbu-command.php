@@ -125,7 +125,11 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
    */
 
   $filteredRoutes = \WP_CLI\MsDbu\MsDbuCommand::getFilteredRoutes($rawRoutes,$appName);
+  WP_CLI::log("filtered routes");
+  WP_CLI::log(var_export($filteredRoutes,true));
   $defaultRouteInfo = \WP_CLI\MsDbu\MsDbuCommand::retrieveDefaultDomainInfo($filteredRoutes);
+  WP_CLI::log("Default route info");
+  WP_CLI::log(var_export($defaultRouteInfo,true));
 
 
   //@todo we need to verify there is one and only one item in the array
