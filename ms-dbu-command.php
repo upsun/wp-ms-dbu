@@ -32,7 +32,9 @@ WP_CLI::add_hook('after_wp_config_load', static function () {
    * They've already manually set the --url parameter so we dont want to override it
    */
   if(WP_CLI::has_config('url')) {
+    $url = WP_CLI::get_config('url');
     WP_CLI::warning('url is already set. skipping...');
+    WP_CLI::log(var_export($url,true));
     return;
   }
 
