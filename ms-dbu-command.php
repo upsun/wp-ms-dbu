@@ -116,34 +116,28 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
     $appName = $capturedNames[1];
   }
 
-  WP_CLI::log(sprintf("App name is %s", $appName));
-  WP_CLI::log('Route info is...');
-  WP_CLI::log(var_export($rawRoutes));
 
-  /**
-   * @todod Should we create a function that'll bundle all this together so we can have one call?
-   */
 
   $filteredRoutes = \WP_CLI\MsDbu\MsDbuCommand::getFilteredRoutes($rawRoutes,$appName);
   if(0 === count($filteredRoutes)) {
     WP_CLI::debug(sprintf("Filtered routes came back empty. Skipping %s",$commandDescript));
     return;
   }
-  WP_CLI::log("filtered routes");
-  WP_CLI::log(var_export($filteredRoutes,true));
-  $defaultRouteInfo = \WP_CLI\MsDbu\MsDbuCommand::retrieveDefaultDomainInfo($filteredRoutes);
 
-  if(1 !== count($defaultRouteInfo) || !(isset($defaultRouteInfo[0]['production_url']))) {
-    WP_CLI::debug(sprintf("Default route info isn't exactly 1 entry, or production url is missing. Skipping %s",$commandDescript));
+  $defaultRouteInfo = \WP_CLI\MsDbu\MsDbuCommand::retrieveDefaultDomainInfo($filteredRoutes);
+  if(1 !== count($defaultRouteInfo) ) {
+    WP_CLI::debug(sprintf("Default route info isn't exactly 1 entry Skipping %s",$commandDescript));
     return;
   }
-  WP_CLI::log("Default route info");
-  WP_CLI::log(var_export($defaultRouteInfo,true));
 
 
-  //@todo we need to verify there is one and only one item in the array
   $mainRoute = reset($defaultRouteInfo);
-  WP_CLI::log(sprintf('Setting the WPCLI to use %s as the url for this command',$mainRoute['production_url']));
+  if(!isset($mainRoute['production_url']) || "" === $mainRoute['production_url']) {
+    WP_CLI::debug(sprintf("Production url property of main route isn't available or is empty. Skipping %s",$commandDescript));
+    return;
+  }
+
+  WP_CLI::log(sprintf('Setting WP-CLI to use %s as the url for this command',$mainRoute['production_url']));
   WP_CLI::set_url($mainRoute['production_url']);
 
 });
