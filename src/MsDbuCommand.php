@@ -138,8 +138,7 @@ class MsDbuCommand extends WP_CLI_Command {
       //switch_to_blog($blogID);
       WP_CLI::log(sprintf("Trying to set URL to %s",$domainSearch));
       WP_CLI::set_url($domainSearch);
-      $newURL=WP_CLI::get_config('url');
-      WP_CLI::log(sprintf("Did it really switch URLs? %s",$newURL));
+      WP_CLI::log(sprintf("Did it really switch URLs? %s",var_export(WP_CLI::get_config('url'),true)));
       $searcher=new Search_Replace_Command();
       $searcher($positional, $associative);
       //restore_current_blog();
