@@ -19,12 +19,12 @@ if ( file_exists( $wpcli_ms_dbu_autoloader ) ) {
  * Our command name that we're adding via this package
  */
 $commandName = "ms-dbu";
-$version="0.1.0";
+$version="0.1.1";
 
 /***
  * IF you change the name of the command here, make you sure you also
  */
-WP_CLI::add_command( $commandName, MsDbuCommand::class, [
+WP_CLI::add_command( $commandName . " update", MsDbuCommand::class, [
   'before_invoke' => static function() {
     if ( !is_multisite()) {
       WP_CLI::error('Not a multisite');
