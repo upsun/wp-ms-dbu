@@ -136,8 +136,10 @@ class MsDbuCommand extends WP_CLI_Command {
 //      WP_CLI::log("associative array:");
 //      WP_CLI::log(var_export($associative,true));
       //switch_to_blog($blogID);
-      WP_CLI::log(sprintf("I would have set URL to %s",$domainSearch));
+      WP_CLI::log(sprintf("Trying to set URL to %s",$domainSearch));
       WP_CLI::set_url($domainSearch);
+      $newURL=WP_CLI::get_config('url');
+      WP_CLI::log(sprintf("Did it really switch URLs? %s",$newURL));
       $searcher=new Search_Replace_Command();
       $searcher($positional, $associative);
       //restore_current_blog();
