@@ -40,20 +40,23 @@ class MsDbuCommand extends WP_CLI_Command {
    *
    * ## OPTIONS
    *  [--routes=<routes>]
-   * : JSON object that describes the routes for the environment. @see PLATFORM_ROUTES https://docs.platform.sh/development/variables/use-variables.html#use-provided-variables
+   * : JSON object that describes the routes for the environment. Only needed if PLATFORM_ROUTES is not set.
+   * : @see PLATFORM_ROUTES https://docs.platform.sh/development/variables/use-variables.html#use-provided-variables
+   *
    *
    * [--app-name=<app-name>]
-   * : The app name as set in your app configuration.
+   * : The app name as set in your app configuration. Only needed if PLATFORM_APPLICATION_NAME is not set
    *
    * ## EXAMPLES
    *
    *     # Update the database with environment routes
-   *     $ wp ms-dbu
+   *     $ wp ms-dbu update
    *     Success: All domains have been updated!
    *
    *
-   * @param array $args       Indexed array of positional arguments.
+   * @param array $args Indexed array of positional arguments.
    * @param array $assoc_args Associative array of associative arguments.
+   * @throws ExitException
    */
   public function __invoke(array $args, array $assoc_args ) {
 
