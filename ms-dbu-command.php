@@ -48,7 +48,7 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
    * If they didn't call our command skip
    */
   global $argv;
-  if($commandName !== $argv[1]) {
+  if($commandName !== $argv[1] && 'update' != $argv[2]) {
     WP_CLI::debug('ms-dbu was not called. Skipping...');
     return;
   }
