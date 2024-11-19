@@ -53,6 +53,9 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
     return;
   }
 
+  WP_CLI::debug(sprintf('argv 1 is %s', $argv[1]));
+  WP_CLI::debug(sprintf("argv 2 is %s", $argv[2]));
+
   $routePattern   = '/^--routes=(.*)$/';
   $appNamePattern = '/^--app-name=(.*)$/';
   $commandDescript = "auto url set up.";
