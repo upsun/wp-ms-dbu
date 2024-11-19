@@ -99,6 +99,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @todo @see https://rudrastyh.com/wordpress-multisite/switch_to-blog-performance.html
    */
   protected function updateDB(): void {
+    $startTime = microtime(true);
     foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
       $positional = [];
       $associative = $this->associative;
@@ -131,18 +132,18 @@ class MsDbuCommand extends WP_CLI_Command {
       }
 
       //$command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
-//      WP_CLI::log("positional array:");
-//      WP_CLI::log(var_export($positional,true));
-//      WP_CLI::log("associative array:");
-//      WP_CLI::log(var_export($associative,true));
-      //switch_to_blog($blogID);
-      WP_CLI::log(sprintf("Trying to set URL to %s",$domainSearch));
-      WP_CLI::set_url($domainSearch);
-      WP_CLI::log(sprintf("Did it really switch URLs? %s",var_export(WP_CLI::get_config('url'),true)));
+      switch_to_blog($blogID);
+
       $searcher=new Search_Replace_Command();
       $searcher($positional, $associative);
-      //restore_current_blog();
+      restore_current_blog();
     }
+
+    $endTime = microtime(true);
+
+    WP_CLI::log(sprintf("Total processing time was %d", ($endTime - $startTime)));
+    //@todo should we run a flush cache when we're done?
+
   }
 
   /**
