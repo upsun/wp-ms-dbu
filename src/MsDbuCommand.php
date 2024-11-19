@@ -6,6 +6,7 @@ use WP_CLI;
 use WP_CLI\ExitException;
 use WP_CLI_Command;
 use Search_Replace_Command;
+use WP_CLI\Utils;
 
 class MsDbuCommand extends WP_CLI_Command {
   protected array $rawRoutes = [];
@@ -86,7 +87,7 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->updateTablesWithPrefix();
     $this->getSites();
     $this->orderFilteredRoutesByDomainLength();
-    $this->setGlobalConfigs();
+    $this->setFlags($data);
   }
 
   /**
@@ -152,11 +153,16 @@ class MsDbuCommand extends WP_CLI_Command {
     }, $this->optionsTables);
   }
 
-  protected function setGlobalConfigs(): void {
-    $this->associative['dry-run'] = WP_CLI::get_config('dry-run');
-    WP_CLI::debug(sprintf("dry-run has been set to %s", var_export($this->associative['dry-run'],true)));
-    $this->associative['verbose'] = WP_CLI::get_config('verbose');
-    WP_CLI::debug(sprintf("verbose has been set to %s", var_export($this->associative['verbose'],true)));
+  protected function setFlags(array $assocFlags): void {
+    if (isset($assocFlags['dry-run'])) {
+      $this->associative['dry-run'] = Utils\get_flag_value($assocFlags,'dry-run', false);
+      WP_CLI::debug(sprintf("dry-run has been set to %s", var_export($this->associative['dry-run'],true)));
+    }
+
+    if(isset($assocFlags['verbose'])) {
+      $this->associative['verbose'] = Utils\get_flag_value($assocFlags,'verbose',false);
+      WP_CLI::debug(sprintf("verbose has been set to %s", var_export($this->associative['verbose'],true)));
+    }
   }
 
   /**
