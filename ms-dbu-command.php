@@ -19,7 +19,7 @@ if ( file_exists( $wpcli_ms_dbu_autoloader ) ) {
  * Our command name that we're adding via this package
  */
 $commandName = "ms-dbu";
-$version="0.1.1";
+$version="0.1.2";
 
 /***
  * IF you change the name of the command here, make you sure you also
@@ -48,7 +48,7 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
    * If they didn't call our command skip
    */
   global $argv;
-  if($commandName !== $argv[1] && 'update' != $argv[2]) {
+  if($commandName !== $argv[1] || 'update' != $argv[2]) {
     WP_CLI::debug('ms-dbu was not called. Skipping...');
     return;
   }
