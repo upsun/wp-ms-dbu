@@ -44,8 +44,6 @@ class MsDbuCommand extends WP_CLI_Command {
    *
    * [--routes=<routes>]
    * : JSON object that describes the routes for the environment. Only needed if PLATFORM_ROUTES is not set.
-   * @see PLATFORM_ROUTES https://docs.platform.sh/development/variables/use-variables.html#use-provided-variables
-   *
    *
    * [--app-name=<app-name>]
    * : The app name as set in your app configuration. Only needed if PLATFORM_APPLICATION_NAME is not set

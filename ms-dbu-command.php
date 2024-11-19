@@ -19,7 +19,7 @@ if ( file_exists( $wpcli_ms_dbu_autoloader ) ) {
  * Our command name that we're adding via this package
  */
 $commandName = "ms-dbu";
-$version="0.2.2";
+$version="0.2.4";
 
 /***
  * IF you change the name of the command here, make you sure you also
