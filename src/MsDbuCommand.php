@@ -34,6 +34,7 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected array $tables = ['site','blogs'];
   protected array $optionsTables = ['options','posts','postmeta'];
+  protected array $associative = ['verbose'=>false,'dry-run'=>false];
 
   /**
    * Updates WordPress multisites in non-production environments on Platform.sh.
@@ -85,6 +86,7 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->updateTablesWithPrefix();
     $this->getSites();
     $this->orderFilteredRoutesByDomainLength();
+    $this->setGlobalConfigs();
   }
 
   /**
@@ -94,7 +96,7 @@ class MsDbuCommand extends WP_CLI_Command {
   protected function updateDB(): void {
     foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
       $positional = [];
-      $associative = ['verbose'=>true,'dry-run'=>true];
+      $associative = $this->associative;
 
       WP_CLI::log(sprintf("I am going to try and find %s\nAnd replace it with %s", $routeData['production_url'], $urlReplace));
 
@@ -148,6 +150,13 @@ class MsDbuCommand extends WP_CLI_Command {
     return array_map(function ($table) use ($blogId){
       return $this->tblPrefix.((1 === $blogId) ? '' : $blogId . '_').$table;
     }, $this->optionsTables);
+  }
+
+  protected function setGlobalConfigs(): void {
+    $this->associative['dry-run'] = WP_CLI::get_config('dry-run');
+    WP_CLI::debug(sprintf("dry-run has been set to %s", var_export($this->associative['dry-run'],true)));
+    $this->associative['verbose'] = WP_CLI::get_config('verbose');
+    WP_CLI::debug(sprintf("verbose has been set to %s", var_export($this->associative['verbose'],true)));
   }
 
   /**
