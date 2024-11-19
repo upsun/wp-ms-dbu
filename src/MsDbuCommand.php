@@ -135,11 +135,11 @@ class MsDbuCommand extends WP_CLI_Command {
 //      WP_CLI::log(var_export($positional,true));
 //      WP_CLI::log("associative array:");
 //      WP_CLI::log(var_export($associative,true));
-      //switch_to_blog($blogID);
-      WP_CLI::set_url($routeData['production_url']);
+      switch_to_blog($blogID);
+      //WP_CLI::set_url($routeData['production_url']);
       $searcher=new Search_Replace_Command();
       $searcher($positional, $associative);
-      //restore_current_blog();
+      restore_current_blog();
     }
   }
 
