@@ -29,10 +29,6 @@ WP_CLI::add_command( $commandName . " update", MsDbuCommand::class, [
     if ( !is_multisite()) {
       WP_CLI::error('Not a multisite');
     }
-
-    if(!getenv('PLATFORM_APPLICATION_NAME')) {
-      WP_CLI::error('Required environment variables are missing. Are you sure you\'re on Platform.sh?');
-    }
   }
 ] );
 
