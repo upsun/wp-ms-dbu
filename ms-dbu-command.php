@@ -19,6 +19,7 @@ if ( file_exists( $wpcli_ms_dbu_autoloader ) ) {
  * Our command name that we're adding via this package
  */
 $commandName = "ms-dbu";
+$version="0.1.0";
 
 /***
  * IF you change the name of the command here, make you sure you also
@@ -34,6 +35,10 @@ WP_CLI::add_command( $commandName, MsDbuCommand::class, [
     }
   }
 ] );
+
+WP_CLI::add_command($commandName . " version", static function () use ($version){
+  WP_CLI::log(sprintf("Version: %s",$version));
+});
 
 /**
  * @todo We should move this whole closure to a class
