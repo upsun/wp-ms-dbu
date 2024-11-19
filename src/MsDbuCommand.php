@@ -50,6 +50,12 @@ class MsDbuCommand extends WP_CLI_Command {
    * [--app-name=<app-name>]
    * : The app name as set in your app configuration. Only needed if PLATFORM_APPLICATION_NAME is not set
    *
+   * [--dry-run]
+   * : Run the entire search/replace operation and show report, but don’t save changes to the database.
+   *
+   * [--verbose]
+   * : Prints rows to the console as they’re updated.
+   *
    * ## EXAMPLES
    *
    *     # Update the database with environment routes
