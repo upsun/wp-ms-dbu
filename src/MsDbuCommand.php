@@ -2,11 +2,13 @@
 
 namespace WP_CLI\MsDbu;
 
+use Composer\Command\SearchCommand;
 use WP_CLI;
 use WP_CLI\ExitException;
 use WP_CLI_Command;
 use Search_Replace_Command;
 use WP_CLI\Utils;
+use Cache_Command;
 
 class MsDbuCommand extends WP_CLI_Command {
   protected array $rawRoutes = [];
@@ -20,20 +22,20 @@ class MsDbuCommand extends WP_CLI_Command {
 
   protected string $regexSearchPttrn='(%s(?!\.%s))';
   protected string $tblPrefix = "";
-  protected array $searchColumns = [
+  protected array $searchOptionsColumns = [
     'option_value',
     'post_content',
     'post_excerpt',
     'post_content_filtered',
     'meta_value',
-    'domain'
   ];
 
+  protected array $searchMainColumns = ['domain'];
   protected SearchReplacer $searchReplacer;
 
   protected string $replacePattern = 'wp search-replace \'%s\' %s %s --include-columns=%s --url=%s --verbose';
 
-  protected array $tables = ['site','blogs'];
+  protected array $mainTables = ['site','blogs'];
   protected array $optionsTables = ['options','posts','postmeta'];
   protected array $associative = ['verbose'=>false,'dry-run'=>false];
 
@@ -69,7 +71,14 @@ class MsDbuCommand extends WP_CLI_Command {
 
     $this->setUp($assoc_args);
     $this->updateDB();
+    $this->flushCache();
+  }
 
+  protected function flushCache(): void {
+    $cache = new \Cache_Command();
+    WP_CLI::log("Flushing cache now that domains have updated...");
+    $cache->flush([],['url'=>parse_url($this->defaultSearchURL, PHP_URL_HOST)]);
+    WP_CLI::log("Cache flushed.");
   }
 
   /**
@@ -100,6 +109,7 @@ class MsDbuCommand extends WP_CLI_Command {
    */
   protected function updateDB(): void {
     $startTime = microtime(true);
+
     foreach ($this->filteredRoutes as $urlReplace=>$routeData) {
       $positional = [];
       $associative = $this->associative;
@@ -117,32 +127,59 @@ class MsDbuCommand extends WP_CLI_Command {
       $positional[] = $domainReplace;
 
       //$targetTables = array_merge($this->tables,$this->processOptionsTables($blogID));
-      $positional = [...$positional, ...$this->tables,...$this->processOptionsTables($blogID)];
+      //First we need to update the site specific tables
+      $positionalIndvTable = [...$positional,...$this->processOptionsTables($blogID)];
       ///$searchTables = implode(' ', $targetTables);
       //$searchColumns = implode(' ', $this->searchColumns);
-      $associative['include-columns'] = implode(',', $this->searchColumns);
+      $associative['include-columns'] = implode(',', $this->searchOptionsColumns);
       $associative['url'] = $routeData['production_url'];
       /**
       * For the primary domain, we want to run it through the whole network, otherwise we end up with a mismatch between
       * wp_blogs and a site's wp_#_options table
        */
       //$network = (isset($routeData['primary']) && $routeData['primary']) ? ' --network' : '';
-      if(isset($routeData['primary']) && $routeData['primary']) {
-        $associative['network'] = true;
-      }
+//      if(isset($routeData['primary']) && $routeData['primary']) {
+//        $associative['network'] = true;
+//      }
 
       //$command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
       switch_to_blog($blogID);
 
-      $searcher=new Search_Replace_Command();
-      $searcher($positional, $associative);
+      $searcherIndvTables=new Search_Replace_Command();
+      $searcherIndvTables($positionalIndvTable, $associative);
       restore_current_blog();
-      WP_CLI::confirm("Update completed. Continue with the next one?");
+
+      WP_CLI::log("Individual site tables updated for %s. Now updating network tables...", $domainSearch);
+
+      /**
+       * Set up the positional args we need
+       */
+      $mainPositional = [];
+      $mainPositional[] = '(?<!\.)'.preg_quote($domainSearch,'/');
+      $mainPositional[] = $domainReplace;
+      $mainPositional = [...$mainPositional,...$this->mainTables];
+
+      /**
+       * Now the assoc args
+       */
+      $associative['include-columns'] = implode(',',$this->searchMainColumns);
+      $associative['regex'] = true;
+
+      if(isset($routeData['primary']) && $routeData['primary']) {
+        $associative['network'] = true;
+      }
+
+      $searcherMainTables=new Search_Replace_Command();
+      $searcherMainTables($mainPositional,$associative);
+
+      WP_CLI::log("Network tables updated for %s.", $domainSearch);
+
+      //WP_CLI::confirm("Update completed. Continue with the next one?");
     }
 
     $endTime = microtime(true);
 
-    WP_CLI::log(sprintf("Total processing time was %d", ($endTime - $startTime)));
+    WP_CLI::log(sprintf("Total processing time was %ss", ($endTime - $startTime)));
     //@todo should we run a flush cache when we're done?
 
   }
@@ -282,9 +319,9 @@ class MsDbuCommand extends WP_CLI_Command {
    * @return void
    */
   protected function updateTablesWithPrefix(): void {
-    $this->tables = array_map(function ($table) {
+    $this->mainTables = array_map(function ($table) {
       return $this->tblPrefix.$table;
-    }, $this->tables);
+    }, $this->mainTables);
   }
 
   /**
