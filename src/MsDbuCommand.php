@@ -137,6 +137,7 @@ class MsDbuCommand extends WP_CLI_Command {
       $searcher=new Search_Replace_Command();
       $searcher($positional, $associative);
       restore_current_blog();
+      WP_CLI::confirm("Update completed. Continue with the next one?");
     }
 
     $endTime = microtime(true);
