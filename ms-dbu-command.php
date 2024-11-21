@@ -164,6 +164,6 @@ WP_CLI::add_hook('after_wp_load', static function() use ($commandName){
   $currentSiteUrl = get_option('siteurl');
   WP_CLI::debug(sprintf("siteurl in the after_wp_config_load stage is %s",$currentSiteUrl));
 
-  WP_CLI::debug(sprintf("URL set in WP_CLI is %s", WP_CLI::get_config('url')));
+  WP_CLI::debug(sprintf("URL set in WP_CLI is %s", $_SERVER['HTTP_HOST']));
 
 });

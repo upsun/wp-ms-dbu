@@ -77,7 +77,7 @@ class MsDbuCommand extends WP_CLI_Command {
       return;
     }
 
-    $this->setUpRemainingValues();
+    $this->setUpRemainingValues($assoc_args);
     $this->updateDB();
     $this->flushCache();
   }
@@ -106,7 +106,7 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->setDefaultSearchURL();
   }
 
-  protected function setUpRemainingValues(): void {
+  protected function setUpRemainingValues(?array $data): void {
     $this->getTablePrefix();
     $this->updateTablesWithPrefix();
     $this->getSites();
