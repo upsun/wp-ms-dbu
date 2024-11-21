@@ -141,6 +141,10 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
     return;
   }
 
+  //can we get the site url at this point?
+  $currentSiteUrl = get_option('siteurl');
+  WP_CLI::debug(sprintf("siteurl in the after_wp_config_load stage is %s",$currentSiteUrl));
+
   WP_CLI::log(sprintf('Setting WP-CLI to use %s as the url for this command',$mainRoute['production_url']));
   WP_CLI::set_url($mainRoute['production_url']);
   WP_CLI::debug("End of ms-dbu update after_wp_config_load command...");
