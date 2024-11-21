@@ -69,7 +69,15 @@ class MsDbuCommand extends WP_CLI_Command {
    */
   public function __invoke(array $args, array $assoc_args ) {
 
-    $this->setUp($assoc_args);
+    $this->setUpRoutesAndDomain($assoc_args);
+
+    //we have to set up the routes and domain data in order to determine if we've already updated.
+    if ($this->determineIfAlreadyUpdated()) {
+      WP_CLI::log("Multisite already updated with domain info. Skipping...");
+      return;
+    }
+
+    $this->setUpRemainingValues();
     $this->updateDB();
     $this->flushCache();
   }
@@ -84,7 +92,7 @@ class MsDbuCommand extends WP_CLI_Command {
   /**
    * @throws ExitException
    */
-  protected function setUp(?array $data): void {
+  protected function setUpRoutesAndDomain(?array $data): void {
     //figure out where we get our route info
     $routes = (isset($data['routes']) && "" !== $data['routes']) ? $data['routes'] : self::getRouteFromEnvVar();
     //save our raw routes data
@@ -96,11 +104,29 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->setDefaultDomainInfo();
     $this->setDefaultReplaceURL();
     $this->setDefaultSearchURL();
+  }
+
+  protected function setUpRemainingValues(): void {
     $this->getTablePrefix();
     $this->updateTablesWithPrefix();
     $this->getSites();
     $this->orderFilteredRoutesByDomainLength();
     $this->setFlags($data);
+  }
+
+  protected function determineIfAlreadyUpdated(): bool {
+    /**
+     * we can't do a straight comparison because routes always adds a trailing slash. WordPress may or may not have it
+     * depending on how you ask for it. get_option should *not* include it.
+     */
+    $siteInDb = get_option('siteurl');
+    if (false === strpos($this->defaultSearchURL,$siteInDb)) {
+      //already updated
+      return true;
+    } else {
+      //we need to update
+      return false;
+    }
   }
 
   /**
