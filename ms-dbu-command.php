@@ -38,8 +38,9 @@ WP_CLI::add_command($commandName . " version", static function () use ($version)
 
 /**
  * @todo We should move this whole closure to a class
+ * was: after_wp_config_load
  */
-WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
+WP_CLI::add_hook('after_wp_load', static function () use ($commandName) {
   /**
    * If they didn't call our command skip
    */
