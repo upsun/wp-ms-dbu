@@ -40,7 +40,7 @@ WP_CLI::add_command($commandName . " version", static function () use ($version)
  * @todo We should move this whole closure to a class
  * was: after_wp_config_load
  */
-WP_CLI::add_hook('after_wp_load', static function () use ($commandName) {
+WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
   /**
    * If they didn't call our command skip
    */
@@ -142,11 +142,28 @@ WP_CLI::add_hook('after_wp_load', static function () use ($commandName) {
     return;
   }
 
-  //can we get the site url at this point?
-  $currentSiteUrl = \get_option('siteurl');
-  WP_CLI::debug(sprintf("siteurl in the after_wp_config_load stage is %s",$currentSiteUrl));
-
   WP_CLI::log(sprintf('Setting WP-CLI to use %s as the url for this command',$mainRoute['production_url']));
   WP_CLI::set_url($mainRoute['production_url']);
   WP_CLI::debug("End of ms-dbu update after_wp_config_load command...");
+});
+
+WP_CLI::add_hook('after_wp_load', static function() use ($commandName){
+  /**
+   * If they didn't call our command skip
+   */
+  global $argv;
+  if(!isset($argv[1]) || $commandName !== $argv[1] || 'update' != $argv[2]) {
+    WP_CLI::debug('ms-dbu was not called. Skipping...');
+    return;
+  }
+
+  WP_CLI::debug(sprintf('argv 1 is %s', $argv[1]));
+  WP_CLI::debug(sprintf("argv 2 is %s", $argv[2]));
+
+  //can we get the site url at this point?
+  $currentSiteUrl = get_option('siteurl');
+  WP_CLI::debug(sprintf("siteurl in the after_wp_config_load stage is %s",$currentSiteUrl));
+
+  WP_CLI::debug(sprintf("URL set in WP_CLI is %s", WP_CLI::get_config('url')));
+
 });
