@@ -142,6 +142,11 @@ WP_CLI::add_hook('after_wp_config_load', static function () use ($commandName) {
     return;
   }
 
+  //can we get to wpdb?
+  global $wpdb;
+  WP_CLI::debug("is wpdb available? ");
+  WP_CLI::debug(var_export($wpdb,true));
+
   WP_CLI::log(sprintf('Setting WP-CLI to use %s as the url for this command',$mainRoute['production_url']));
   WP_CLI::set_url($mainRoute['production_url']);
   WP_CLI::debug("End of ms-dbu update after_wp_config_load command...");
