@@ -39,6 +39,8 @@ class MsDbuCommand extends WP_CLI_Command {
   protected array $optionsTables = ['options','posts','postmeta'];
   protected array $associative = ['verbose'=>false,'dry-run'=>false];
 
+  protected bool $subdirectoryType = false;
+
   /**
    * Updates WordPress multisites in non-production environments on Platform.sh.
    *
@@ -112,6 +114,11 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->getSites();
     $this->orderFilteredRoutesByDomainLength();
     $this->setFlags($data);
+    $this->determineMultisiteType();
+  }
+
+  protected function determineMultisiteType(): void {
+    $this->subdirectoryType = defined('SUBDOMAIN_INSTALL') && false === constant('SUBDOMAIN_INSTALL');
   }
 
   protected function determineIfAlreadyUpdated(): bool {
@@ -147,6 +154,11 @@ class MsDbuCommand extends WP_CLI_Command {
         continue;
       }
 
+      /**
+       * Is this a subdirectory-based multisite?
+       */
+
+
       $domainSearch = parse_url($routeData['production_url'], PHP_URL_HOST);
       $positional[] = $domainSearch;
       $domainReplace = parse_url($urlReplace, PHP_URL_HOST);
@@ -175,22 +187,42 @@ class MsDbuCommand extends WP_CLI_Command {
       $searcherIndvTables($positionalIndvTable, $associative);
       restore_current_blog();
 
-      WP_CLI::log("Individual site tables updated for %s. Now updating network tables...", $domainSearch);
+      WP_CLI::log(sprintf("Individual site tables updated for %s. Now updating network tables...", $domainSearch));
 
       /**
        * Set up the positional args we need
        */
       $mainPositional = [];
-      $mainPositional[] = '(?<!\.)'.preg_quote($domainSearch,'/');
-      $mainPositional[] = $domainReplace;
-      $mainPositional = [...$mainPositional,...$this->mainTables];
+      /**
+       * @todo can we add the positional elements by indexed keys and then resort before handing it over? That way we
+       * could add the replace positional element once instead of in each section
+       */
+      if (!$this->subdirectoryType) {
+        WP_CLI::debug("This is a (multi|sub)domain multisite.");
+        $mainPositional[] = '(?<!\.)'.preg_quote($domainSearch,'/'); //search position
+        $mainPositional[] = $domainReplace; // replace position
+        $mainPositional = [...$mainPositional,...$this->mainTables]; // tables
+        $associative['include-columns'] = implode(',',$this->searchMainColumns);
+        $associative['regex'] = true;
+      } else {
+        WP_CLI::debug("This is a subdirectory based multisite.");
+        /**
+         * If this is a subdirectory type multisite, then we:
+         *  - don't want to limit the tables
+         *  - don't want this to be a regex search
+         *  - do want to limit to columns, but ALL the columns
+         */
+        $mainPositional[] = $domainSearch;
+        $mainPositional[] = $domainReplace;
+        $associative['include-columns'] = implode(',',[...$this->searchOptionsColumns,...$this->searchMainColumns]);
+      }
+
 
       /**
-       * Now the assoc args
+       * Technically we can have more than one primary and subsequent primary domains aren't necessarily the "parent" domain
+       * (ie the domain listed in $table_prefix.'sites')
+       * @todo we need to limit to JUST the domain in $table_prefix.'site';
        */
-      $associative['include-columns'] = implode(',',$this->searchMainColumns);
-      $associative['regex'] = true;
-
       if(isset($routeData['primary']) && $routeData['primary']) {
         $associative['network'] = true;
       }
