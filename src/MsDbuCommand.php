@@ -389,9 +389,20 @@ class MsDbuCommand extends WP_CLI_Command {
      * one?
      * @todo there should be one, and one only. should we verify and if not true, throw an error?
      */
-    return array_filter($routes, static function ($route) {
+    $defaultDomainInfo = array_filter($routes, static function ($route) {
       return (isset($route['primary']) && $route['primary']);
     });
+
+    /**
+     * Normally there is only one, but not always. LOL! So we'll grab the first one as it is *normally* what we would
+     * consider the "parent" domain in a multisite.
+     */
+    if(1 !== count($defaultDomainInfo)) {
+      WP_CLI::debug("More than one primary domain discovered. Using the first one from the collection.");
+      $defaultDomainInfo = array_slice($defaultDomainInfo,0,1,true);
+    }
+
+    return $defaultDomainInfo;
   }
 
   /**
