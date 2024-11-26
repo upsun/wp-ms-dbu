@@ -279,7 +279,15 @@ class MsDbuCommand extends WP_CLI_Command {
       return (array) $site;
     },get_sites());
   }
+
+  /**
+   * @throws ExitException
+   */
   protected function setDefaultDomainInfo(): void {
+    WP_CLI::debug('determining default domain info. Raw, then filtered.');
+    WP_CLI::debug(var_export($this->rawRoutes,true));
+    WP_CLI::debug(var_export($this->filteredRoutes,true));
+
     /**
      * we now have (filteredRoutes) a list of NEW domains that are connected to our application as keys, with an array
      * of values that include production_url which is our "from" url, as well as a primary attribute to indicate which
@@ -427,7 +435,8 @@ class MsDbuCommand extends WP_CLI_Command {
     });
 
     if(0 === count($defaultDomainInfo)) {
-      WP_CLI::debug("how did we hit zero default domains? Routes, then the return from the filter.");
+      WP_CLI::debug("how did we hit zero default domains? passed in routes, then the return from the filter.");
+
       WP_CLI::debug(var_export($routes,true));
       WP_CLI::debug(var_export($defaultDomainInfo,true));
 
