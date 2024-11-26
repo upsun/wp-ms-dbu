@@ -411,6 +411,7 @@ class MsDbuCommand extends WP_CLI_Command {
    *
    * @param array $routes list of filtered routes
    * @return array
+   * @throws ExitException
    */
   public static function retrieveDefaultDomainInfo(array $routes): array {
     /**
@@ -424,6 +425,14 @@ class MsDbuCommand extends WP_CLI_Command {
     $defaultDomainInfo = array_filter($routes, static function ($route) {
       return (isset($route['primary']) && $route['primary']);
     });
+
+    if(0 === count($defaultDomainInfo)) {
+      WP_CLI::debug("how did we hit zero default domains? Routes, then the return from the filter.");
+      WP_CLI::debug(var_export($routes,true));
+      WP_CLI::debug(var_export($defaultDomainInfo,true));
+
+      WP_CLI::error("There were zero domains returned as the primary domain. I can't continue without a default domain. Exiting.");
+    }
 
     /**
      * Normally there is only one, but not always. LOL! So we'll grab the first one as it is *normally* what we would
