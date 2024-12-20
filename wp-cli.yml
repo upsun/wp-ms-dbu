@@ -1,2 +1,2 @@
 require:
-  - hello-world-command.php
+  - ms-dbu-command.php

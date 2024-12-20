@@ -11,17 +11,58 @@ use WP_CLI\Utils;
 use Cache_Command;
 
 class MsDbuCommand extends WP_CLI_Command {
+  /**
+   * @var array
+   */
   protected array $rawRoutes = [];
+  /**
+   * @var array
+   */
+  /**
+   * @var array
+   */
+  /**
+   * @var array
+   */
   protected array $defaultDomainInfo = [];
+  /**
+   * @var array
+   */
+  /**
+   * @var array
+   */
   protected array $filteredRoutes = [];
+  /**
+   * @var array
+   */
   protected array $sites=[];
+  /**
+   * @var string
+   */
   protected string $defaultReplaceURLFull;
+  /**
+   * @var string
+   */
   protected string $defaultSearchURL;
+  /**
+   * @var string
+   */
   protected string $appName;
+  /**
+   * @var string
+   */
   protected static string $envVarPrefix = "PLATFORM_";
-
+  /**
+   * @var string
+   */
   protected string $regexSearchPttrn='(%s(?!\.%s))';
+  /**
+   * @var string
+   */
   protected string $tblPrefix = "";
+  /**
+   * @var array|string[]
+   */
   protected array $searchOptionsColumns = [
     'option_value',
     'post_content',
@@ -29,12 +70,22 @@ class MsDbuCommand extends WP_CLI_Command {
     'post_content_filtered',
     'meta_value',
   ];
-
+  /**
+   * @var array|string[]
+   */
   protected array $searchMainColumns = ['domain'];
+  /**
+   * @var SearchReplacer
+   */
   protected SearchReplacer $searchReplacer;
-
+  /**
+   * @var string
+   */
   protected string $replacePattern = 'wp search-replace \'%s\' %s %s --include-columns=%s --url=%s --verbose';
 
+  /**
+   * @var array|string[]
+   */
   protected array $mainTables = ['site','blogs'];
   protected array $optionsTables = ['options','posts','postmeta'];
   protected array $associative = ['verbose'=>false,'dry-run'=>false];
@@ -84,6 +135,12 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->flushCache();
   }
 
+  /**
+   * Flushes the object cache to make sure we're getting updated, accurate information after making changes
+   * Depending on the cache method in use, information from queries may be cached instead of executed. Once we have made
+   * changes to the database, we need to flush the cache so new cache can be generated with the updated information
+   * @return void
+   */
   protected function flushCache(): void {
     $cache = new \Cache_Command();
     WP_CLI::log("Flushing cache now that domains have updated...");
@@ -92,6 +149,7 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
+   * Determines and sets up our routing (urls/domains) information, and App name (needed for determining domain info)
    * @throws ExitException
    */
   protected function setUpRoutesAndDomain(?array $data): void {
@@ -108,6 +166,11 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->setDefaultSearchURL();
   }
 
+  /**
+   * Sets up the remaining info we need (table prefixes, list of sites, flags, multisite type, etc) before we begin
+   * @param array|null $data
+   * @return void
+   */
   protected function setUpRemainingValues(?array $data): void {
     $this->getTablePrefix();
     $this->updateTablesWithPrefix();
@@ -117,10 +180,18 @@ class MsDbuCommand extends WP_CLI_Command {
     $this->determineMultisiteType();
   }
 
+  /**
+   * Determines which multisite type is in use: (sub|multi)-domain or subdirectory
+   * @return void
+   */
   protected function determineMultisiteType(): void {
     $this->subdirectoryType = defined('SUBDOMAIN_INSTALL') && false === constant('SUBDOMAIN_INSTALL');
   }
 
+  /**
+   * Checks to see if the database has already been updated to the new preview environment URL
+   * @return bool
+   */
   protected function determineIfAlreadyUpdated(): bool {
     /**
      * we can't do a straight comparison because routes always adds a trailing slash. WordPress may or may not have it
@@ -137,6 +208,7 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
+   * Runs the update process to update all production urls to new preview environment urls
    * @return void
    * @todo @see https://rudrastyh.com/wordpress-multisite/switch_to-blog-performance.html
    */
@@ -256,6 +328,11 @@ class MsDbuCommand extends WP_CLI_Command {
     }, $this->optionsTables);
   }
 
+  /**
+   * Handles any flag parameters that might have been passed in with the command when called
+   * @param array $assocFlags
+   * @return void
+   */
   protected function setFlags(array $assocFlags): void {
     if (isset($assocFlags['dry-run'])) {
       $this->associative['dry-run'] = Utils\get_flag_value($assocFlags,'dry-run', false);
@@ -281,6 +358,9 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
+   * Setter for the default/parent domain info
+   *
+   * @uses self::retrieveDefaultDomainInfo()
    * @throws ExitException
    */
   protected function setDefaultDomainInfo(): void {
@@ -288,14 +368,6 @@ class MsDbuCommand extends WP_CLI_Command {
     WP_CLI::debug(var_export($this->rawRoutes,true));
     WP_CLI::debug(var_export($this->filteredRoutes,true));
 
-    /**
-     * we now have (filteredRoutes) a list of NEW domains that are connected to our application as keys, with an array
-     * of values that include production_url which is our "from" url, as well as a primary attribute to indicate which
-     * one is our default domain. Now we need the "primary" domain (aka default_domain). It *should* be the first item
-     * in the array but should we rely on that assumption or should we array_filter so we know we're getting the correct
-     * one?
-     * @todo there should be one, and one only. should we verify and if not true, throw an error?
-     */
     $this->defaultDomainInfo = self::retrieveDefaultDomainInfo($this->filteredRoutes);
 
     if(count($this->defaultDomainInfo) !== 1 ) {
@@ -315,7 +387,7 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
-   * Retrieves and saves the default search URL from the default domain information
+   * Setter for default search url (ie the default/parent url we want to replace)
    * @return void
    * @todo seems like some of these we could use a magic get and just return the correct data?
    */
@@ -324,7 +396,7 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
-   * Filters out all non-primary (ie redirection) routes that are in the collection
+   * Setter for filtered routes
    * @return void
    */
   protected function setFilteredRoutes(): void {
@@ -335,7 +407,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * Reorders our route array so that subdomains (or sub-sub domains) of a domain are first. ie least specific to most
    * specific
    *
-   * We need the default_domain to be processed LAST otherwise any domains that are sub(-sub)domains of it wont be
+   * We need the default_domain to be processed LAST otherwise any domains that are sub(-sub)domains of it won't be
    * allowed to update their tables. This assumes that our default_domain is first in the list which it *should* be.
    * @todo do we need to search for default_domain, remove it from where it is, and then append it?
    * @return void
@@ -416,7 +488,13 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
+   * Determines which new URL is the "default" route
    *
+   * In a new preview environment, a new ephermal domain is created and assigned to the environment. If additional domains
+   * or subdomains have been added, then new URLs will be created for each of those as well. We need the one that
+   * corresponds to main or default domain (the one typically marked as `default_domain` in the project settings).
+   * However, the exact determination of which one isn't consistent without calling the API, so this is a best
+   * guesstimate based on the information we have available.
    * @param array $routes list of filtered routes
    * @return array
    * @throws ExitException
@@ -425,10 +503,9 @@ class MsDbuCommand extends WP_CLI_Command {
     /**
      * we now have (filteredRoutes) a list of NEW domains that are connected to our application as keys, with an array
      * of values that include production_url which is our "from" url, as well as a primary attribute to indicate which
-     * one is our default domain. Now we need the "primary" domain (aka default_domain). It *should* be the first item
+     * one(s) is(are) our default domain(s). Now we need the "primary" domain (aka default_domain). It *should* be the first item
      * in the array but should we rely on that assumption or should we array_filter so we know we're getting the correct
      * one?
-     * @todo there should be one, and one only. should we verify and if not true, throw an error?
      */
     $defaultDomainInfo = array_filter($routes, static function ($route) {
       return (isset($route['primary']) && $route['primary']);
@@ -444,7 +521,7 @@ class MsDbuCommand extends WP_CLI_Command {
     }
 
     /**
-     * Normally there is only one, but not always. LOL! So we'll grab the first one as it is *normally* what we would
+     * Normally there is only one, but not always. Grab the first one as it is *normally* what we would
      * consider the "parent" domain in a multisite.
      */
     if(1 !== count($defaultDomainInfo)) {
@@ -456,6 +533,8 @@ class MsDbuCommand extends WP_CLI_Command {
   }
 
   /**
+   * Parses the routes information and plucks those that are connected to an app container (ie ignores all the redirect
+   * routes)
    * @param array $routes
    * @param string $appName
    * @return array
