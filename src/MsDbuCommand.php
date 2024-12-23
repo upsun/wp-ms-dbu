@@ -2,65 +2,68 @@
 
 namespace WP_CLI\MsDbu;
 
-use Composer\Command\SearchCommand;
 use WP_CLI;
 use WP_CLI\ExitException;
 use WP_CLI_Command;
 use Search_Replace_Command;
 use WP_CLI\Utils;
-use Cache_Command;
 
 class MsDbuCommand extends WP_CLI_Command {
   /**
+   * The raw routes information as passed in/retrieved
    * @var array
    */
   protected array $rawRoutes = [];
   /**
-   * @var array
-   */
-  /**
-   * @var array
-   */
-  /**
+   * The determined "default" (main/parent) domain information for the new environment
    * @var array
    */
   protected array $defaultDomainInfo = [];
   /**
-   * @var array
-   */
-  /**
+   * The routes that map directly to the app (ie not  redirects)
    * @var array
    */
   protected array $filteredRoutes = [];
   /**
+   * The list of sites in the multisite
    * @var array
    */
   protected array $sites=[];
   /**
+   * The full URL of the new parent/default domain
    * @var string
    */
   protected string $defaultReplaceURLFull;
   /**
+   * The full URL of the original/"old" domain that needs to be replaced
    * @var string
    */
   protected string $defaultSearchURL;
   /**
+   * Name of the application as defined in the app config file.
+   * Needed in order to filter routes data to those that map back to the application
    * @var string
    */
   protected string $appName;
   /**
+   * Environment variable prefix in use on the system.
+   * Used to retrieve environment variables if values are not passed in
    * @var string
    */
   protected static string $envVarPrefix = "PLATFORM_";
   /**
+   *
    * @var string
+   * @todo remove as not used
    */
   protected string $regexSearchPttrn='(%s(?!\.%s))';
   /**
+   * WordPress database table prefix
    * @var string
    */
   protected string $tblPrefix = "";
   /**
+   * Per-site list of columns to search when replacing
    * @var array|string[]
    */
   protected array $searchOptionsColumns = [
@@ -71,25 +74,40 @@ class MsDbuCommand extends WP_CLI_Command {
     'meta_value',
   ];
   /**
+   * Global columns to search when replacing
    * @var array|string[]
    */
   protected array $searchMainColumns = ['domain'];
   /**
+   * Instance of the SearchReplacer class to perform the search/replace
    * @var SearchReplacer
    */
   protected SearchReplacer $searchReplacer;
   /**
    * @var string
+   * @todo remove
    */
   protected string $replacePattern = 'wp search-replace \'%s\' %s %s --include-columns=%s --url=%s --verbose';
 
   /**
+   * Global tables to search during search/replace
    * @var array|string[]
    */
   protected array $mainTables = ['site','blogs'];
+  /**
+   * Per-site tables to search during search/replace
+   * @var array|string[]
+   */
   protected array $optionsTables = ['options','posts','postmeta'];
+  /**
+   * Default associative flags to use when during search/replace
+   * @var array|false[]
+   */
   protected array $associative = ['verbose'=>false,'dry-run'=>false];
-
+  /**
+   * Subdirectory multisite (true) or (sub|multi)-domain multisite (false)
+   * @var bool
+   */
   protected bool $subdirectoryType = false;
 
   /**
@@ -211,6 +229,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * Runs the update process to update all production urls to new preview environment urls
    * @return void
    * @todo @see https://rudrastyh.com/wordpress-multisite/switch_to-blog-performance.html
+   * @todo Change log messages to debug?
    */
   protected function updateDB(): void {
     $startTime = microtime(true);
@@ -236,25 +255,12 @@ class MsDbuCommand extends WP_CLI_Command {
       $domainReplace = parse_url($urlReplace, PHP_URL_HOST);
       $positional[] = $domainReplace;
 
-      //$targetTables = array_merge($this->tables,$this->processOptionsTables($blogID));
       //First we need to update the site specific tables
       $positionalIndvTable = [...$positional,...$this->processOptionsTables($blogID)];
-      ///$searchTables = implode(' ', $targetTables);
-      //$searchColumns = implode(' ', $this->searchColumns);
       $associative['include-columns'] = implode(',', $this->searchOptionsColumns);
       $associative['url'] = $routeData['production_url'];
-      /**
-      * For the primary domain, we want to run it through the whole network, otherwise we end up with a mismatch between
-      * wp_blogs and a site's wp_#_options table
-       */
-      //$network = (isset($routeData['primary']) && $routeData['primary']) ? ' --network' : '';
-//      if(isset($routeData['primary']) && $routeData['primary']) {
-//        $associative['network'] = true;
-//      }
 
-      //$command = sprintf($this->replacePattern, $domainSearch, $domainReplace, $searchTables, $searchColumns, $routeData['production_url']);
       switch_to_blog($blogID);
-
       $searcherIndvTables=new Search_Replace_Command();
       $searcherIndvTables($positionalIndvTable, $associative);
       restore_current_blog();
@@ -303,15 +309,11 @@ class MsDbuCommand extends WP_CLI_Command {
       $searcherMainTables($mainPositional,$associative);
 
       WP_CLI::log("Network tables updated for %s.", $domainSearch);
-
-      //WP_CLI::confirm("Update completed. Continue with the next one?");
     }
 
     $endTime = microtime(true);
 
     WP_CLI::log(sprintf("Total processing time was %ss", ($endTime - $startTime)));
-    //@todo should we run a flush cache when we're done?
-
   }
 
   /**
