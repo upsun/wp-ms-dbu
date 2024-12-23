@@ -1,0 +1,20 @@
+{
+  "https://domain1.preview-environment.site/": {
+    "primary": true,
+    "production_url": "https://production-domain1.com/",
+    "type": "upstream",
+    "upstream": "<app-name>"
+  },
+  "https://domain2.preview-environment.site/": {
+    "primary": true,
+    "production_url": "https://production-domain2.com/",
+    "type": "upstream",
+    "upstream": "<app-name>"
+  },
+  "https://domain3.preview-environment.site/": {
+    "primary": true,
+    "production_url": "https://production-domain3.com/",
+    "type": "upstream",
+    "upstream": "<app-name>"
+  }
+}
