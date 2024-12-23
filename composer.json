@@ -1,8 +1,8 @@
 {
-    "name": "gilzow/wp-ms-dbu-wpcli-package",
+    "name": "upsun/wp-ms-dbu",
     "type": "wp-cli-package",
     "description": "",
-    "homepage": "https://github.com/platformsh/wp-ms-dbu",
+    "homepage": "https://github.com/upsun/wp-ms-dbu",
     "license": "MIT",
     "authors": [],
     "require": {
