@@ -36,6 +36,8 @@ WP_CLI::add_command( $commandName . " update", MsDbuCommand::class, [
 ] );
 
 /**
+ * Outputs the package's version
+ *
  * Currently used for verification of the installed version for debugging.
  * Will potentially be expanded later
  */
