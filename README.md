@@ -58,7 +58,7 @@ ms-dbu update [--routes=<routes>] [--app-name=<app-name>]
 ~~~
 
 ##### routes
-If you are running this command in a Platform.sh/Upsun.com preview environments, you do not need to include the `--routes` 
+If you are running this command in a Platform.sh/Upsun.com preview environment, you do not need to include the `--routes` 
 parameter; `routes` will automatically be retrieved via the `PLATFORM_ROUTES` environment variable. If you are running 
 the `update` command elsewhere, you will need to provide a JSON object representing your route information in the 
 environment as the `--routes` parameter. See [routes-example.json](./routes-example.json) for example JSON structure 
@@ -69,7 +69,7 @@ Alternatively, you can base64 encode the JSON object and store it as an environm
 command will automatically ingest the route information.
 
 ##### app-name
-If you are running this command in a Platform.sh/Upsun.com preview environments, you do not need to include the 
+If you are running this command in a Platform.sh/Upsun.com preview environment, you do not need to include the 
 `--app-name` parameter; `app-name` will automatically be retrieved via the `PLATFORM_APPLICATION_NAME` environment 
 variable. If you are running the `update` command elsewhere, you will need to provide an app name that matches the 
 `upstream` property in your routes json . See [routes](#routes).
