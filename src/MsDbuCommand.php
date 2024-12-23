@@ -308,7 +308,7 @@ class MsDbuCommand extends WP_CLI_Command {
       $searcherMainTables=new Search_Replace_Command();
       $searcherMainTables($mainPositional,$associative);
 
-      WP_CLI::log("Network tables updated for %s.", $domainSearch);
+      WP_CLI::log(sprintf("Network tables updated for %s.", $domainSearch));
     }
 
     $endTime = microtime(true);
