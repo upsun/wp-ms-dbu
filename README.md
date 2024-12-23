@@ -8,8 +8,6 @@ Updates a multisite's (both subdirectory and sub/multi-domain) database when dep
 Built for use on [Platform.sh](https://platform.sh/) and [Upsun.com](https://upsun.com/) but should be usable in other systems as well (see [Using](#using))
 
 
-[![Build Status](https://travis-ci.org/platformsh/wp-ms-dba.svg?branch=master)](https://travis-ci.org/platformsh/wp-ms-dba)
-
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
 ## Using
@@ -117,13 +115,13 @@ Installing this package requires WP-CLI v2.5 or greater. Update to the latest st
 Once you've done so, you can install the latest stable version of this package with:
 
 ```bash
-wp package install upsun/wp-ms-dba
+wp package install upsun/wp-ms-dbu
 ```
 
 To install the latest development version of this package, use the following command instead:
 
 ```bash
-wp package install upsun/wp-ms-dba:dev-update
+wp package install upsun/wp-ms-dbu:dev-update
 ```
 
 ## Contributing
@@ -139,16 +137,16 @@ this documentation.
 Think you’ve found a bug? We’d love for you to help us get it fixed.
 
 Before you create a new issue, you should 
-[search existing issues](https://github.com/upsun/wp-ms-dba/issues?q=label%3Abug%20) to see if there’s an existing 
+[search existing issues](https://github.com/upsun/wp-ms-dbu/issues?q=label%3Abug%20) to see if there’s an existing 
 resolution to it, or if it’s already been fixed in a newer version.
 
 Once you’ve done a bit of searching and discovered there isn’t an open or fixed issue for your bug, please 
-[create a new issue](https://github.com/platformsh/wp-ms-dba/issues/new). Include as much detail as you can, and clear 
+[create a new issue](https://github.com/platformsh/wp-ms-dbu/issues/new). Include as much detail as you can, and clear 
 steps to reproduce if possible. 
 
 ### Creating a pull request
 
-Want to contribute a new feature? Please first [open a new issue](https://github.com/upsun/wp-ms-dba/issues/new) to 
+Want to contribute a new feature? Please first [open a new issue](https://github.com/upsun/wp-ms-dbu/issues/new) to 
 discuss whether the feature is a good fit for the project.
 
 ## Support
