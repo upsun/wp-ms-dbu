@@ -22,7 +22,7 @@ $commandName = "ms-dbu";
 /**
  * Internal version number
  */
-$version="0.7.1";
+$version="0.7.2";
 
 /**
  * Update database command
