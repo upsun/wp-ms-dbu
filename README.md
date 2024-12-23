@@ -141,7 +141,7 @@ Before you create a new issue, you should
 resolution to it, or if it’s already been fixed in a newer version.
 
 Once you’ve done a bit of searching and discovered there isn’t an open or fixed issue for your bug, please 
-[create a new issue](https://github.com/platformsh/wp-ms-dbu/issues/new). Include as much detail as you can, and clear 
+[create a new issue](https://github.com/upsun/wp-ms-dbu/issues/new). Include as much detail as you can, and clear 
 steps to reproduce if possible. 
 
 ### Creating a pull request
