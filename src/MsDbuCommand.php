@@ -218,7 +218,7 @@ class MsDbuCommand extends WP_CLI_Command {
     $siteInDb = get_option('siteurl');
     WP_CLI::debug("siteInDb is $siteInDb");
 
-    if (false === strpos($this->defaultSearchURL,$siteInDb)) {
+    if (false === strpos(parse_url($this->defaultSearchURL,PHP_URL_HOST),parse_url($siteInDb,PHP_URL_HOST))) {
       //already updated
       WP_CLI::debug(sprintf('false when comparing site in db to defaultSearchURL %s',$this->defaultSearchURL));
       return true;
@@ -400,7 +400,7 @@ class MsDbuCommand extends WP_CLI_Command {
   protected function setDefaultSearchURL(): void {
     $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
     WP_CLI::debug(sprintf('Setting defaultSearchURL to %s', $this->defaultSearchURL ));
-    WP_CLI::debug(sprintf('This is based on a defaultReplaceURLFull of %s, and default domainInfo of '.PHP_EOL,$this->defaultReplaceURLFull),var_export($this->defaultDomainInfo,true));
+    WP_CLI::debug(sprintf('This is based on a defaultReplaceURLFull of %s, and default domainInfo of %s'.PHP_EOL,$this->defaultReplaceURLFull),var_export($this->defaultDomainInfo,true));
   }
 
   /**
