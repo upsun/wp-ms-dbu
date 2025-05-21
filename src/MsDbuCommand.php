@@ -139,7 +139,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @throws ExitException
    */
   public function __invoke(array $args, array $assoc_args ) {
-
+    WP_CLI::debug('Beginning database update command.');
     $this->setUpRoutesAndDomain($assoc_args);
 
     //we have to set up the routes and domain data in order to determine if we've already updated.
@@ -216,8 +216,11 @@ class MsDbuCommand extends WP_CLI_Command {
      * depending on how you ask for it. get_option should *not* include it.
      */
     $siteInDb = get_option('siteurl');
+    WP_CLI::debug("siteInDb is $siteInDb");
+
     if (false === strpos($this->defaultSearchURL,$siteInDb)) {
       //already updated
+      WP_CLI::debug(sprintf('false when comparing site in db to defaultSearchURL %s',$this->defaultSearchURL));
       return true;
     } else {
       //we need to update
@@ -394,7 +397,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @todo seems like some of these we could use a magic get and just return the correct data?
    */
   protected function setDefaultSearchURL(): void {
-    $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
+    $this-> defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
   }
 
   /**
