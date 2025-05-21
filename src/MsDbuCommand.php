@@ -389,6 +389,7 @@ class MsDbuCommand extends WP_CLI_Command {
    */
   protected function setDefaultReplaceURL(): void {
     $this->defaultReplaceURLFull = array_key_first($this->defaultDomainInfo);
+    WP_CLI::debug(sprintf('Setting defaultReplaceURLFull to %s',$this->defaultReplaceURLFull));
   }
 
   /**
@@ -397,7 +398,9 @@ class MsDbuCommand extends WP_CLI_Command {
    * @todo seems like some of these we could use a magic get and just return the correct data?
    */
   protected function setDefaultSearchURL(): void {
-    $this-> defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
+    $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
+    WP_CLI::debug(sprintf('Setting defaultSearchURL to %s', $this->defaultSearchURL ));
+    WP_CLI::debug(sprintf('This is based on a defaultReplaceURLFull of %s, and default domainInfo of '.PHP_EOL,$this->defaultReplaceURLFull),var_export($this->defaultDomainInfo,true));
   }
 
   /**
