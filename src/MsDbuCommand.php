@@ -400,7 +400,7 @@ class MsDbuCommand extends WP_CLI_Command {
   protected function setDefaultSearchURL(): void {
     $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
     WP_CLI::debug(sprintf('Setting defaultSearchURL to %s', $this->defaultSearchURL ));
-    WP_CLI::debug(sprintf('This is based on a defaultReplaceURLFull of %s, and default domainInfo of %s'.PHP_EOL,$this->defaultReplaceURLFull),var_export($this->defaultDomainInfo,true));
+    WP_CLI::debug(sprintf('This is based on a defaultReplaceURLFull of %s, and default domainInfo of %s'.PHP_EOL,$this->defaultReplaceURLFull,var_export($this->defaultDomainInfo,true)));
   }
 
   /**
