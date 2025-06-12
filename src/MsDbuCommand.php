@@ -139,7 +139,7 @@ class MsDbuCommand extends WP_CLI_Command {
    * @throws ExitException
    */
   public function __invoke(array $args, array $assoc_args ) {
-
+    WP_CLI::debug('Beginning database update command.');
     $this->setUpRoutesAndDomain($assoc_args);
 
     //we have to set up the routes and domain data in order to determine if we've already updated.
@@ -216,8 +216,11 @@ class MsDbuCommand extends WP_CLI_Command {
      * depending on how you ask for it. get_option should *not* include it.
      */
     $siteInDb = get_option('siteurl');
-    if (false === strpos($this->defaultSearchURL,$siteInDb)) {
+    WP_CLI::debug("siteInDb is $siteInDb");
+
+    if (false === strpos(parse_url($this->defaultSearchURL,PHP_URL_HOST),parse_url($siteInDb,PHP_URL_HOST))) {
       //already updated
+      WP_CLI::debug(sprintf('false when comparing site in db to defaultSearchURL %s',$this->defaultSearchURL));
       return true;
     } else {
       //we need to update
@@ -386,6 +389,7 @@ class MsDbuCommand extends WP_CLI_Command {
    */
   protected function setDefaultReplaceURL(): void {
     $this->defaultReplaceURLFull = array_key_first($this->defaultDomainInfo);
+    WP_CLI::debug(sprintf('Setting defaultReplaceURLFull to %s',$this->defaultReplaceURLFull));
   }
 
   /**
@@ -395,6 +399,8 @@ class MsDbuCommand extends WP_CLI_Command {
    */
   protected function setDefaultSearchURL(): void {
     $this->defaultSearchURL = $this->defaultDomainInfo[$this->defaultReplaceURLFull]['production_url'];
+    WP_CLI::debug(sprintf('Setting defaultSearchURL to %s', $this->defaultSearchURL ));
+    WP_CLI::debug(sprintf('This is based on a defaultReplaceURLFull of %s, and default domainInfo of %s'.PHP_EOL,$this->defaultReplaceURLFull,var_export($this->defaultDomainInfo,true)));
   }
 
   /**
